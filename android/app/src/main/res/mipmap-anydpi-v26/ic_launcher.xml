@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adaptive icon, used from Android 8 onwards. Devices below that fall back
+     to the bitmap in mipmap-<density>/ic_launcher.png, which carries its own
+     rounded-square background since those launchers apply no mask. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <!-- Themed icons (Android 13+): the launcher recolours this silhouette to
+         match the user's wallpaper palette. -->
+    <monochrome android:drawable="@mipmap/ic_launcher_monochrome" />
+</adaptive-icon>

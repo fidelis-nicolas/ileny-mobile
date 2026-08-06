@@ -1,0 +1,279 @@
+ILENY MOBILE (Flutter) — BUILD PLAN
+Android-first. Lightweight and fast is the top priority — it must run
+comfortably on low-end/low-RAM devices, not just flagships.
+Backend: Spring Boot, JWT auth, REST only (no WebSocket, no push yet).
+Web SPA (React) is the feature-parity reference for what already ships.
+
+================================================================
+1. GUIDING PRINCIPLES
+================================================================
+- Small APK, fast cold start, smooth scrolling on a 2GB-RAM device.
+- Every dependency has to earn its place — prefer Flutter built-ins
+  over a package; prefer a small package over a big framework.
+- No WebSocket/FCM infra exists on the backend yet — build for REST
+  polling now, swap in push later without reshaping the app.
+- Mobile-first revision: scope is EMPLOYEE SELF-SERVICE + a curated
+  slice of admin/manager actions, not the full HR/payroll admin
+  surface. This intentionally deviates from the written MVP scope
+  doc (which says mobile = self-service + leave approvals only,
+  "use web" for payroll/discipline/HR admin) — flag that deviation
+  to product/backend so the scope doc gets updated to match, and
+  confirm the backend's @PreAuthorize role checks actually allow the
+  roles below to call these endpoints from a non-web client.
+  Triage rule for what earns a mobile screen: time-sensitive or
+  on-the-go, low-effort data entry (approve/view/toggle, not a dense
+  multi-field form), and mobile hardware (camera, push) adds real
+  value. On that basis:
+    IN SCOPE for mobile (role-gated, narrow slices):
+      - Employee directory (read-only browse/search for everyone;
+        invite + status toggle for HR Manager/Org Admin)
+      - Discipline case logging (create case + camera-captured
+        document, HR Manager/Org Admin) — camera capture is a
+        genuine mobile advantage over desktop upload
+      - Announcement authoring (create + publish, HR Manager/Org
+        Admin) — it's a short text form, low risk
+      - Payroll cycle approval as a single review-and-approve step
+        (HR Manager/Org Admin) — same pattern as leave approval,
+        NOT cycle creation or component configuration
+      - Read-only KPI tiles on the Home dashboard (headcount,
+        attendance rate, payroll cost trend) sourced from the report
+        endpoints, no export
+    STAYS WEB-ONLY: payroll cycle creation/component config, batch
+      Paystack transfers, tenant/branch/department/position settings,
+      attendance penalty rules, biometric device management, audit
+      logs, full PDF/Excel report export — all high-blast-radius,
+      form-heavy, or setup-once, poor fit for a small screen.
+- Android first (minSdk 24 / Android 7+, target latest stable).
+  iOS build comes after the Android MVP is validated on real devices.
+
+================================================================
+2. TECH STACK (kept deliberately small)
+================================================================
+State mgmt   : Provider + ChangeNotifier (ships in Flutter, near-zero
+               runtime cost). Revisit Riverpod only if state fan-out
+               becomes painful — do not add both.
+Navigation   : go_router (official, declarative, small, supports
+               role-gated redirects for the manager-only routes).
+Networking   : dio (needed for interceptors: auth header injection,
+               401 -> refresh-and-retry, multipart uploads, and
+               cookie handling — see section 4 blocker).
+Token storage: flutter_secure_storage (access token + persisted
+               cookie jar for the refresh token).
+Images       : cached_network_image (profile photos), flutter_svg
+               (already added, used for the logo mark).
+Dates/i18n   : intl.
+PDF viewing  : defer until Phase 3 (payslips) — evaluate `printing`
+               or `pdfx` then; don't pull it in before it's needed.
+
+Explicitly AVOID for MVP: Firebase/FCM packages (no backend support
+yet), Bloc/GetX (extra concepts/boilerplate we don't need on top of
+Provider), any charting/report package (KPI tiles are plain stat
+cards built from raw numbers, not a chart library; full reports stay
+web-only), background services/foreground polling (drains battery —
+poll only while the app is foregrounded/visible).
+
+One justified addition: `image_picker` (camera + gallery) is needed
+in Phase 4 for discipline-case document capture — HR Manager/Org
+Admin only, loaded on that screen alone, not a global dependency.
+Compress images client-side before upload (see section 6) so this
+addition doesn't work against the lightweight goal.
+
+================================================================
+3. APP STRUCTURE
+================================================================
+Feature-first once it grows past the current auth-only skeleton:
+
+  lib/
+    core/
+      network/        dio client, interceptors, api exceptions
+      storage/         secure token storage, cookie jar
+      theme/           app_colors.dart, app_theme.dart  (exists)
+      widgets/         shared buttons, fields, loading/error states
+      router.dart       go_router config + role guards
+    features/
+      auth/             login, 2FA verify, forgot/reset password
+      home/             dashboard shell + role-based nav
+      attendance/        clock in/out, history, monthly summary
+      leave/             types, balance, request, approvals (manager)
+      payslips/          list, detail, download/view
+      announcements/     list, detail, mark-read; create/publish
+                          (role-gated, Phase 4)
+      notifications/     list, unread badge, polling
+      employees/         "me" profile (view-only) + directory
+                          browse/search; invite + status toggle
+                          (role-gated, Phase 4)
+      discipline/         narrow: create case + camera document
+                          capture, view own team's cases
+                          (role-gated, Phase 4)
+      payroll/            narrow: cycle summary (read-only) + single
+                          approve action (role-gated, Phase 4)
+    main.dart
+
+Keep screens/ and theme/ from the current skeleton — fold them into
+this structure as features/auth and core/theme respectively when
+Phase 0 work starts, rather than restarting.
+
+================================================================
+4. AUTH — KNOWN BACKEND BLOCKER TO RESOLVE FIRST
+================================================================
+POST /api/v1/auth/login returns the access token in the JSON body,
+but the refresh token is set as an httpOnly cookie scoped to
+/api/v1/auth (fine for the browser SPA, awkward for a native client).
+
+Plan:
+  a) Use dio + cookie_jar + dio_cookie_manager with a PersistCookieJar
+     so dio replays the refresh cookie automatically — this works
+     without backend changes, confirm it end-to-end against the real
+     API before building anything else.
+  b) In parallel, flag to the backend team that a mobile client would
+     be simpler/more robust with the refresh token returned in the
+     body (or a dedicated mobile login variant) instead of relying on
+     cookie persistence. Not a blocker to start, but worth raising
+     early since it affects the auth interceptor design.
+
+Auth flow endpoints to wire in Phase 0:
+  POST /api/v1/auth/login          -> LoginResponse{twoFactorRequired, tokens}
+  POST /api/v1/auth/2fa/verify     -> only if twoFactorRequired
+  GET  /api/v1/auth/me             -> MeResponse (bootstrap: roles, employeeId,
+                                       employeeFullName, tenant, plan info)
+  POST /api/v1/auth/refresh        -> called from a dio interceptor on 401
+  POST /api/v1/auth/logout         -> also clear secure storage + cookie jar
+  POST /api/v1/auth/forgot-password / reset-password / change-password
+
+Store: accessToken in memory (re-fetched via refresh on cold start),
+refresh cookie in the persisted cookie jar, roleNames + employeeId
+from MeResponse cached in memory for role-gating the UI.
+
+================================================================
+5. PHASED BUILD ORDER
+================================================================
+Phase 0 — Foundations (in progress)
+  - Theming (done: app_colors.dart, app_theme.dart)
+  - Sign-in screen UI (done, white-background variant)
+  - dio client + interceptors + secure storage + cookie jar
+  - go_router skeleton with an auth guard (redirect to /login if no
+    valid session) and a role-gated redirect for manager routes
+  - App shell: bottom nav or drawer with Home / Attendance / Leave /
+    Payslips / Announcements / Notifications
+
+Phase 1 — Core self-service loop
+  - Employee profile (view-only): GET /api/v1/employees/me
+  - Employee directory (read-only, all roles): GET /employees?
+    status&departmentId&branchId&page&size — reuses the same list
+    pattern as every other paginated screen, cheap to add here even
+    though the write actions (invite/status toggle) wait for Phase 4
+  - Attendance: POST /attendance/clock-in, POST /attendance/{id}/clock-out,
+    GET /attendance/employee/{id} (paginated history), GET
+    /attendance/summary/{employeeId}?month&year
+  - Notifications: GET /notifications (paginated), GET
+    /notifications/unread-count (poll on foreground/resume + light
+    interval while the app is open, stop when backgrounded), PATCH
+    /notifications/{id}/read
+  - Announcements (read-only here; authoring is Phase 4): GET
+    /announcements?status=PUBLISHED, GET /announcements/{id}, POST
+    /announcements/{id}/read
+  - Home dashboard KPI tiles (read-only, role-based): a few stat
+    cards for HR Manager/Org Admin (headcount, today's attendance
+    rate) sourced from existing list/summary endpoints — no new
+    report endpoints wired yet, just counts already on hand
+
+Phase 2 — Leave
+  - GET /leave/types, GET /leave/balance/{employeeId}?year=
+  - POST /leave/requests, GET /leave/requests?employeeId&page&size
+    (own history/status)
+
+Phase 3 — Payslips
+  - GET /payslips/me (paginated), GET /payslips/{id}
+  - GET /payslips/{id}/download — stream through the authenticated
+    /files/** endpoint; save to app cache dir and open with a small
+    PDF viewer package (evaluate then, not before)
+
+Phase 4 — Manager & Admin actions (role-gated; two tiers below)
+
+  Tier A — anyone with direct reports:
+  - PATCH /leave/requests/{id}/approve, PATCH .../reject
+  - Team attendance summary view (reuse Phase 1 attendance screens
+    with a team-scoped query instead of a separate codebase)
+
+  Tier B — HR Manager / Org Admin only, ship after Tier A is stable:
+  - Employee directory write actions: POST /employees/{id}/invite,
+    PATCH /employees/{id}/status
+  - Discipline case logging: POST /discipline/cases, POST
+    /discipline/actions/{actionId}/document (multipart, camera
+    capture via image_picker, compress before upload), GET
+    /discipline/employees/{id}/cases (own team only, not the full
+    org list — that's web)
+  - Announcement authoring: POST /announcements, PATCH
+    /announcements/{id}/publish
+  - Payroll cycle approval: GET /payroll/cycles/{id}/preview (review
+    summary) + PATCH /payroll/cycles/{id}/approve as one confirm-
+    styled flow — no cycle creation, no component config, no batch
+    transfer trigger on mobile
+
+  Before starting Tier B: verify against the real backend which
+  roles the @PreAuthorize annotations actually admit for these
+  endpoints, since this tier is a scope addition beyond the written
+  MVP doc (see section 1).
+
+Phase 5 — Post-MVP / explicitly deferred
+  - Push notifications once backend adds FCM (replaces polling)
+  - GPS-verified clock-in
+  - Employee self-editable profile/photo
+  - Payroll cycle creation, component config, batch Paystack
+    transfers, tenant/settings, penalty rules, device management,
+    audit logs, full report export — deliberately kept web-only
+    (see section 1)
+  - iOS build + platform-specific polish
+
+================================================================
+6. PERFORMANCE / "RUNS ON ANY DEVICE" CHECKLIST
+================================================================
+- minSdkVersion 24, build with Android App Bundle (.aab) so Play
+  serves ABI-split installs automatically — no manual APK splitting
+  needed for the store build.
+- Enable R8 shrinking + resource shrinking in the Android release
+  build config.
+- Every list (attendance history, payslips, notifications,
+  announcements) uses ListView.builder with the backend's
+  page/size params — never fetch-all-then-render.
+- const constructors everywhere feasible (already the pattern in the
+  sign-in screen); scope rebuilds with Provider's Selector/Consumer
+  instead of rebuilding whole screens on every state change.
+- Cache MeResponse and the employee profile in memory for the session
+  — they rarely change and are read on almost every screen.
+- No background services; notification polling only while the
+  relevant screen/app is in the foreground.
+- Discipline document photos (Phase 4) are compressed/resized
+  client-side before upload — a raw camera photo is several MB, no
+  reason to send that over the wire or hold it in memory uncompressed.
+- Test on three profiles before calling a feature done: a 2GB-RAM
+  Android Go-class emulator, a mid-range device, and a flagship —
+  cold start and list-scroll smoothness are checked on the low end,
+  not just the dev's machine.
+- Keep the dependency list in section 2 as the ceiling — any new
+  package added later should be justified against "does this cost
+  us startup time or APK size for a feature most users touch daily."
+
+================================================================
+7. OPEN QUESTIONS / BACKEND ASKS
+================================================================
+- Refresh-token-via-cookie for native clients (section 4) — confirm
+  cookie-jar approach works against the real API early in Phase 0;
+  raise the "return refresh token in body for mobile" ask in parallel.
+- Push notifications (FCM) — not built server-side; needed before
+  Phase 5 push work can start.
+- Confirm whether employees are expected to see their own uploaded
+  documents on mobile (GET /employees/me/documents exists) — not
+  in the MVP mobile module list explicitly, worth a quick check
+  before Phase 1 scope is locked.
+- Phase 4 Tier B is broader than the written MVP scope doc (which
+  reserves discipline/payroll/full HR admin for web) — get
+  product/backend sign-off on this expansion, and confirm the
+  @PreAuthorize role checks on POST /discipline/cases, PATCH
+  /payroll/cycles/{id}/approve, POST /announcements, and PATCH
+  /announcements/{id}/publish actually permit HR_MANAGER (not just
+  ORG_ADMIN) before building those screens.
+- Confirm GET /discipline/employees/{id}/cases is enough to scope a
+  manager's mobile view to "my team's cases only" — if discipline
+  cases aren't linked to a manager hierarchy the same way leave
+  approvals are, this endpoint may need a backend change.

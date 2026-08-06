@@ -1,0 +1,16 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- The INTERNET permission is required for development. Specifically,
+         the Flutter tool needs it to communicate with the running application
+         to allow setting breakpoints, to provide hot reload, etc.
+         (The release build gets it from the main manifest — the app itself
+         needs it to reach the API.)
+    -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Android 9+ blocks cleartext http by default, which would break a local
+         backend reached over an http API_BASE_URL dart-define (see ApiConfig).
+         Debug-only: release builds keep the secure default and must use https. -->
+    <application
+        android:usesCleartextTraffic="true"
+        tools:ignore="UnusedAttribute" />
+</manifest>

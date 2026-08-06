@@ -1,0 +1,229 @@
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+
+import '../../../core/network/api_exception.dart';
+import '../../../core/theme/app_colors.dart';
+import '../data/employee_models.dart';
+import '../data/employee_repository.dart';
+import 'employee_avatar.dart';
+
+/// View-only "me" profile, plus a Phase 5 self-service photo change.
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  late Future<EmployeeResponse> _future;
+  bool _changingPhoto = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _future = context.read<EmployeeRepository>().me();
+  }
+
+  Future<void> _reload() async {
+    final future = context.read<EmployeeRepository>().me();
+    setState(() {
+      _future = future;
+    });
+    await future;
+  }
+
+  Future<void> _changePhoto() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Take a photo'),
+              onTap: () => Navigator.of(context).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+
+    final photo = await ImagePicker().pickImage(
+      source: source,
+      imageQuality: 70,
+      maxWidth: 1600,
+    );
+    if (photo == null || !mounted) return;
+
+    final repository = context.read<EmployeeRepository>();
+    setState(() => _changingPhoto = true);
+    try {
+      final updated = await repository.uploadMyPhoto(photo.path);
+      setState(() => _future = Future.value(updated));
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      }
+    } finally {
+      if (mounted) setState(() => _changingPhoto = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('My Profile')),
+      body: FutureBuilder<EmployeeResponse>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            final message = snapshot.error is ApiException
+                ? (snapshot.error as ApiException).message
+                : 'Could not load your profile.';
+            return RefreshIndicator(
+              onRefresh: _reload,
+              child: ListView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Center(
+                      child: Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppColors.textMuted),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          final employee = snapshot.data!;
+          return RefreshIndicator(
+            onRefresh: _reload,
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Center(
+                  child: GestureDetector(
+                    onTap: _changingPhoto ? null : _changePhoto,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        EmployeeAvatar(
+                          photoUrl: employee.photoUrl,
+                          initials: _initials(employee),
+                          radius: 44,
+                        ),
+                        if (_changingPhoto)
+                          const Positioned.fill(
+                            child: Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        else
+                          Positioned(
+                            right: -4,
+                            bottom: -4,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: AppColors.primaryGreen,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt_outlined,
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Center(
+                  child: Text(
+                    employee.fullName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primaryGreen,
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Text(
+                    employee.employeeNumber,
+                    style: const TextStyle(color: AppColors.textMuted),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _InfoTile(label: 'Position', value: employee.positionName),
+                _InfoTile(label: 'Department', value: employee.departmentName),
+                _InfoTile(label: 'Branch', value: employee.branchName),
+                _InfoTile(label: 'Employment type', value: employee.employmentType),
+                _InfoTile(label: 'Status', value: employee.status),
+                _InfoTile(label: 'Email', value: employee.email),
+                _InfoTile(label: 'Phone', value: employee.phone),
+                _InfoTile(label: 'Hire date', value: employee.hireDate),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  String _initials(EmployeeResponse employee) {
+    final first = employee.firstName.isNotEmpty ? employee.firstName[0] : '';
+    final last = employee.lastName.isNotEmpty ? employee.lastName[0] : '';
+    return '$first$last'.toUpperCase();
+  }
+}
+
+class _InfoTile extends StatelessWidget {
+  const _InfoTile({required this.label, required this.value});
+
+  final String label;
+  final String? value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(
+              label,
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              (value == null || value!.isEmpty) ? '—' : value!,
+              style: const TextStyle(color: AppColors.primaryGreen, fontSize: 14),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

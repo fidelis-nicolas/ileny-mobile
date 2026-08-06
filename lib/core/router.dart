@@ -1,8 +1,14 @@
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/screens/forgot_password_screen.dart';
+import '../features/auth/screens/reset_password_screen.dart';
 import '../features/auth/screens/sign_in_screen.dart';
 import '../features/auth/state/auth_state.dart';
 import '../features/home/screens/home_shell.dart';
+
+/// Routes reachable without a session — the sign-in screen plus the
+/// account-recovery pair, which by definition are used while signed out.
+const _publicRoutes = {'/login', '/forgot-password', '/reset-password'};
 
 /// Redirect helper for role-gated routes: return this from a GoRoute's
 /// own `redirect` once a manager/admin-only route exists (plan.txt
@@ -22,14 +28,26 @@ GoRouter buildRouter(AuthState authState) {
       if (authState.status == AuthStatus.unknown) return null;
 
       final signedIn = authState.status == AuthStatus.authenticated;
-      final loggingIn = state.matchedLocation == '/login';
+      final onPublicRoute = _publicRoutes.contains(state.matchedLocation);
 
-      if (!signedIn && !loggingIn) return '/login';
-      if (signedIn && loggingIn) return '/home';
+      if (!signedIn && !onPublicRoute) return '/login';
+      if (signedIn && onPublicRoute) return '/home';
       return null;
     },
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const SignInScreen()),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        // ?token= is here for a future deep link off the reset email; today
+        // the user pastes the link into the screen itself.
+        path: '/reset-password',
+        builder: (context, state) => ResetPasswordScreen(
+          token: state.uri.queryParameters['token'],
+        ),
+      ),
       GoRoute(path: '/home', builder: (context, state) => const HomeShell()),
     ],
   );

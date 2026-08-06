@@ -81,6 +81,7 @@ void main() async {
 
   runApp(MyApp(
     authState: authState,
+    authRepository: authRepository,
     notificationsState: notificationsState,
     employeeRepository: employeeRepository,
     attendanceRepository: attendanceRepository,
@@ -98,6 +99,7 @@ class MyApp extends StatelessWidget {
   const MyApp({
     super.key,
     required this.authState,
+    required this.authRepository,
     required this.notificationsState,
     required this.employeeRepository,
     required this.attendanceRepository,
@@ -111,6 +113,7 @@ class MyApp extends StatelessWidget {
   });
 
   final AuthState authState;
+  final AuthRepository authRepository;
   final NotificationsState notificationsState;
   final EmployeeRepository employeeRepository;
   final AttendanceRepository attendanceRepository;
@@ -128,6 +131,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: authState),
         ChangeNotifierProvider.value(value: notificationsState),
+        // Read directly by the forgot/reset password screens — those calls are
+        // anonymous and touch no session state, so they don't go via AuthState.
+        Provider.value(value: authRepository),
         Provider.value(value: employeeRepository),
         Provider.value(value: attendanceRepository),
         Provider.value(value: notificationRepository),

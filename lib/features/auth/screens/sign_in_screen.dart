@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../state/auth_state.dart';
+import '../widgets/auth_shell.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -68,7 +69,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 56),
-                      const _LogoMark(),
+                      const AuthLogoMark(),
                       const SizedBox(height: 20),
                       const Text(
                         'ileny',
@@ -161,11 +162,16 @@ class _SignInScreenState extends State<SignInScreen> {
                             : Text(twoFactorPending ? 'Verify' : 'Sign in'),
                       ),
                       const SizedBox(height: 14),
-                      if (!twoFactorPending)
+                      if (!twoFactorPending) ...[
+                        TextButton(
+                          onPressed: () => context.push('/forgot-password'),
+                          child: const Text('Forgot password?'),
+                        ),
                         TextButton(
                           onPressed: () {},
                           child: const Text('Sign in with SSO'),
                         ),
+                      ],
                       const Spacer(flex: 2),
                     ],
                   ),
@@ -173,36 +179,6 @@ class _SignInScreenState extends State<SignInScreen> {
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-class _LogoMark extends StatelessWidget {
-  const _LogoMark();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 88,
-      height: 88,
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryGreen.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Center(
-        child: SvgPicture.asset(
-          'assets/icons/ileny_mark.svg',
-          width: 46,
-          height: 46,
         ),
       ),
     );

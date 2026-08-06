@@ -11,6 +11,7 @@ import '../../auth/state/auth_state.dart';
 import '../data/attendance_models.dart';
 import '../data/attendance_repository.dart';
 import 'qr_scan_screen.dart';
+import 'request_correction_screen.dart';
 import 'team_attendance_screen.dart';
 
 /// Clock in/out + this month's summary + paginated history for the signed-in
@@ -158,6 +159,23 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
   }
 
+  /// [date] comes from the tapped history row when there is one; opened from
+  /// the app bar the user picks the day themselves.
+  Future<void> _requestCorrection({DateTime? date}) async {
+    final submitted = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => RequestCorrectionScreen(initialDate: date),
+      ),
+    );
+    if (submitted == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Correction request submitted for review.'),
+        ),
+      );
+    }
+  }
+
   Future<String?> _scanQrToken() {
     return Navigator.of(context).push<String>(
       MaterialPageRoute(builder: (_) => const QrScanScreen()),
@@ -187,6 +205,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       appBar: AppBar(
         title: const Text('Attendance'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_calendar_outlined),
+            tooltip: 'Request a correction',
+            onPressed: () => _requestCorrection(),
+          ),
           if (isManager)
             IconButton(
               icon: const Icon(Icons.groups_outlined),
@@ -235,6 +258,11 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                 color: AppColors.primaryGreen,
               ),
             ),
+            const SizedBox(height: 4),
+            const Text(
+              'Tap a day to request a correction.',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+            ),
             const SizedBox(height: 8),
             SizedBox(
               height: 420,
@@ -251,7 +279,12 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
                       emptyMessage: 'No attendance records yet.',
                       fetchPage: (page, size) =>
                           repository.history(_employeeId, page: page, size: size),
-                      itemBuilder: (context, record) => _HistoryTile(record: record),
+                      itemBuilder: (context, record) => _HistoryTile(
+                        record: record,
+                        onRequestCorrection: () => _requestCorrection(
+                          date: DateTime.tryParse(record.attendanceDate),
+                        ),
+                      ),
                     ),
             ),
           ],
@@ -423,13 +456,15 @@ class _StatTile extends StatelessWidget {
 }
 
 class _HistoryTile extends StatelessWidget {
-  const _HistoryTile({required this.record});
+  const _HistoryTile({required this.record, required this.onRequestCorrection});
 
   final AttendanceResponse record;
+  final VoidCallback onRequestCorrection;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: onRequestCorrection,
       title: Text(
         record.attendanceDate,
         style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
@@ -439,7 +474,14 @@ class _HistoryTile extends StatelessWidget {
             ? '${record.workHours!.toStringAsFixed(1)}h worked'
             : 'In progress',
       ),
-      trailing: Text(record.status, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(record.status, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          const SizedBox(width: 6),
+          const Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted),
+        ],
+      ),
     );
   }
 }

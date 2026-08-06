@@ -110,6 +110,31 @@ class AttendanceRepository {
     }
   }
 
+  /// Flags a problem with one of the caller's own attendance records. Like
+  /// clock-in, it omits any employee id — the backend resolves the employee
+  /// from the authenticated user.
+  ///
+  /// Two things this deliberately cannot do, both backend contract rather than
+  /// client limitation: it raises a note against an *existing* record (a date
+  /// with no record at all 404s with "No attendance record found for that
+  /// date"), and it proposes no times — approval records that the employee's
+  /// account of the day was accepted, and a manager still has to overwrite the
+  /// record separately for hours and pay to change.
+  Future<AttendanceCorrection> submitCorrection({
+    required String date,
+    required String reason,
+  }) async {
+    try {
+      final response = await _dioClient.dio.post<Map<String, dynamic>>(
+        '/attendance/corrections',
+        data: {'date': date, 'reason': reason},
+      );
+      return AttendanceCorrection.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
   /// Org-wide attendance for a single day — the existing endpoint the Home
   /// KPI tile's "today's attendance rate" is sourced from (see plan.txt
   /// Phase 1); not a new report endpoint.

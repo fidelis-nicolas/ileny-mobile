@@ -36,6 +36,40 @@ class AttendanceResponse {
   final String status;
 }
 
+/// A correction request and its approval state. Note there is no field for
+/// proposed times — the record carries only the employee's reason, which is
+/// why approving one does not itself change the attendance record.
+class AttendanceCorrection {
+  const AttendanceCorrection({
+    required this.id,
+    required this.attendanceId,
+    required this.employeeId,
+    required this.reason,
+    required this.status,
+    this.approvedAt,
+  });
+
+  factory AttendanceCorrection.fromJson(Map<String, dynamic> json) {
+    return AttendanceCorrection(
+      id: json['id'] as String,
+      attendanceId: json['attendanceId'] as String,
+      employeeId: json['employeeId'] as String,
+      reason: json['reason'] as String? ?? '',
+      status: json['status'] as String,
+      approvedAt: json['approvedAt'] as String?,
+    );
+  }
+
+  final String id;
+  final String attendanceId;
+  final String employeeId;
+  final String reason;
+
+  /// PENDING, APPROVED, or REJECTED.
+  final String status;
+  final String? approvedAt;
+}
+
 class AttendanceSummaryResponse {
   const AttendanceSummaryResponse({
     required this.employeeId,

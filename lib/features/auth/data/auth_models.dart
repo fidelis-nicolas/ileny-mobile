@@ -18,20 +18,56 @@ class TokenResponse {
   final int expiresIn;
 }
 
+/// One organisation a login could be for, when the address has accounts in
+/// several tenants. Carries only what the picker has to render.
+class TenantChoice {
+  const TenantChoice({required this.tenantId, required this.tenantName});
+
+  factory TenantChoice.fromJson(Map<String, dynamic> json) {
+    return TenantChoice(
+      tenantId: json['tenantId'] as String,
+      tenantName: json['tenantName'] as String,
+    );
+  }
+
+  final String tenantId;
+  final String tenantName;
+}
+
+/// The outcome of a login attempt, in one of three shapes: a tenant choice
+/// (the credentials were valid for more than one organisation, so the caller
+/// re-submits them with the chosen `tenantId`), a two-factor challenge, or a
+/// started session. Callers must check [tenantChoices] *before*
+/// [twoFactorRequired] and [tokens] — the tenant-choice shape has neither of
+/// those set, so code written against the older two-shape contract silently
+/// does nothing.
 class LoginResponse {
-  const LoginResponse({required this.twoFactorRequired, this.tokens});
+  const LoginResponse({
+    required this.twoFactorRequired,
+    this.tokens,
+    this.tenantChoices,
+  });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
-      twoFactorRequired: json['twoFactorRequired'] as bool,
+      twoFactorRequired: json['twoFactorRequired'] as bool? ?? false,
       tokens: json['tokens'] == null
           ? null
           : TokenResponse.fromJson(json['tokens'] as Map<String, dynamic>),
+      tenantChoices: json['tenantChoices'] == null
+          ? null
+          : (json['tenantChoices'] as List<dynamic>)
+              .map((e) => TenantChoice.fromJson(e as Map<String, dynamic>))
+              .toList(growable: false),
     );
   }
 
   final bool twoFactorRequired;
   final TokenResponse? tokens;
+  final List<TenantChoice>? tenantChoices;
+
+  /// True when the server answered with organisations to pick between.
+  bool get tenantChoiceRequired => tenantChoices?.isNotEmpty ?? false;
 }
 
 class MeResponse {

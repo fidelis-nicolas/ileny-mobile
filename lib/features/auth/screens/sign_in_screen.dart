@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../data/auth_models.dart';
 import '../state/auth_state.dart';
 import '../widgets/auth_shell.dart';
+import '../widgets/organisation_picker.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -51,9 +53,39 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
+  /// Second half of a multi-organisation login: the same credentials go up
+  /// again with the chosen tenant. The password is read straight out of the
+  /// field for this one call — it is never persisted, logged, or copied into
+  /// [AuthState], and goes away with the controller when this screen does.
+  ///
+  /// The chosen account may itself have two-factor on, in which case
+  /// [AuthState] flips `twoFactorPending` and the form switches to the code
+  /// field exactly as it does for a single-account login.
+  Future<void> _selectOrganisation(
+    AuthState authState,
+    TenantChoice choice,
+  ) async {
+    setState(() {
+      _submitting = true;
+      _errorMessage = null;
+    });
+    try {
+      await authState.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        tenantId: choice.tenantId,
+      );
+    } on ApiException catch (e) {
+      setState(() => _errorMessage = e.message);
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthState>();
+    final tenantChoicePending = authState.tenantChoicePending;
     final twoFactorPending = authState.twoFactorPending;
 
     return Scaffold(
@@ -84,9 +116,11 @@ class _SignInScreenState extends State<SignInScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         child: Text(
-                          twoFactorPending
-                              ? 'Enter the verification code sent to your email.'
-                              : 'Your people workspace, in your pocket.',
+                          tenantChoicePending
+                              ? 'This email is used at more than one organisation. Choose the one to sign in to.'
+                              : twoFactorPending
+                                  ? 'Enter the verification code sent to your email.'
+                                  : 'Your people workspace, in your pocket.',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 14,
@@ -107,7 +141,14 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                         const SizedBox(height: 14),
                       ],
-                      if (twoFactorPending)
+                      if (tenantChoicePending)
+                        OrganisationPicker(
+                          choices: authState.tenantChoices,
+                          enabled: !_submitting,
+                          onSelected: (choice) =>
+                              _selectOrganisation(authState, choice),
+                        )
+                      else if (twoFactorPending)
                         TextField(
                           controller: _codeController,
                           keyboardType: TextInputType.number,
@@ -148,21 +189,45 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                       ],
                       const SizedBox(height: 22),
-                      ElevatedButton(
-                        onPressed: _submitting ? null : () => _submit(authState),
-                        child: _submitting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Text(twoFactorPending ? 'Verify' : 'Sign in'),
-                      ),
+                      if (tenantChoicePending) ...[
+                        // The picker submits on tap, so there's no primary
+                        // button here — just the in-flight indicator and a
+                        // way back to the ordinary form.
+                        if (_submitting)
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.primaryGreen,
+                            ),
+                          ),
+                        TextButton(
+                          onPressed: _submitting
+                              ? null
+                              : () {
+                                  setState(() => _errorMessage = null);
+                                  authState.cancelTenantChoice();
+                                },
+                          child: const Text('Back to sign in'),
+                        ),
+                      ] else
+                        ElevatedButton(
+                          onPressed:
+                              _submitting ? null : () => _submit(authState),
+                          child: _submitting
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(twoFactorPending ? 'Verify' : 'Sign in'),
+                        ),
                       const SizedBox(height: 14),
-                      if (!twoFactorPending) ...[
+                      if (!tenantChoicePending && !twoFactorPending) ...[
                         TextButton(
                           onPressed: () => context.push('/forgot-password'),
                           child: const Text('Forgot password?'),

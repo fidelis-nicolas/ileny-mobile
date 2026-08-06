@@ -21,6 +21,14 @@ class AuthState extends ChangeNotifier {
   bool twoFactorPending = false;
   String? pendingEmail;
 
+  /// Organisations the last login attempt matched, when the address has
+  /// accounts in more than one tenant. Empty in the ordinary single-account
+  /// case. The password deliberately isn't held here — the sign-in form keeps
+  /// it for the one re-submit and nothing else stores it.
+  List<TenantChoice> tenantChoices = const [];
+
+  bool get tenantChoicePending => tenantChoices.isNotEmpty;
+
   List<String> get roleNames => currentUser?.roleNames ?? const [];
 
   bool hasAnyRole(Iterable<String> roles) => roles.any(roleNames.contains);
@@ -32,8 +40,30 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> login({required String email, required String password}) async {
-    final result = await _authRepository.login(email: email, password: password);
+  /// [tenantId] is set only on the second call of a multi-organisation login,
+  /// once the user has picked from [tenantChoices]; the same email and
+  /// password go up again with it.
+  ///
+  /// The three response shapes are checked in the order the API contract
+  /// requires — tenant choice first, since that shape carries neither tokens
+  /// nor the two-factor flag and would otherwise look like a no-op.
+  Future<void> login({
+    required String email,
+    required String password,
+    String? tenantId,
+  }) async {
+    final result = await _authRepository.login(
+      email: email,
+      password: password,
+      tenantId: tenantId,
+    );
+    if (result.tenantChoiceRequired) {
+      tenantChoices = result.tenantChoices!;
+      pendingEmail = email;
+      notifyListeners();
+      return;
+    }
+    tenantChoices = const [];
     if (result.twoFactorRequired) {
       twoFactorPending = true;
       pendingEmail = email;
@@ -41,6 +71,14 @@ class AuthState extends ChangeNotifier {
       return;
     }
     await _loadCurrentUser();
+  }
+
+  /// Backs out of the organisation picker to the plain sign-in form.
+  void cancelTenantChoice() {
+    if (tenantChoices.isEmpty) return;
+    tenantChoices = const [];
+    pendingEmail = null;
+    notifyListeners();
   }
 
   Future<void> verifyTwoFactor(String code) async {

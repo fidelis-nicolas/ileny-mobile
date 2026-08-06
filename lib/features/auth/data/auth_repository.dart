@@ -14,14 +14,23 @@ class AuthRepository {
   final DioClient _dioClient;
   final TokenStorage _tokenStorage;
 
+  /// [tenantId] is null on a first attempt and set only when re-submitting
+  /// after the server answered with tenant choices — the address had valid
+  /// accounts in more than one organisation. It narrows the lookup; the
+  /// password is still checked again against the chosen account.
   Future<LoginResponse> login({
     required String email,
     required String password,
+    String? tenantId,
   }) async {
     try {
       final response = await _dioClient.authDio.post<Map<String, dynamic>>(
         '/auth/login',
-        data: {'email': email, 'password': password},
+        data: {
+          'email': email,
+          'password': password,
+          if (tenantId != null) 'tenantId': tenantId,
+        },
       );
       final login = LoginResponse.fromJson(response.data!);
       if (login.tokens != null) {

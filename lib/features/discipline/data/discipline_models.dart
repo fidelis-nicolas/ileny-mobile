@@ -33,6 +33,44 @@ class DisciplinaryActionResponse {
   final String createdAt;
 }
 
+/// One message in a case's reply thread — the employee answering a query, or
+/// HR replying to that answer.
+///
+/// [fromEmployee] is decided by the server from who is calling and is never
+/// sent by the client. That is what makes a recorded response worth anything:
+/// HR cannot file a response in the employee's name.
+class DisciplinaryResponseResponse {
+  const DisciplinaryResponseResponse({
+    required this.id,
+    required this.caseId,
+    this.authorName,
+    required this.fromEmployee,
+    required this.message,
+    this.fileUrl,
+    required this.createdAt,
+  });
+
+  factory DisciplinaryResponseResponse.fromJson(Map<String, dynamic> json) {
+    return DisciplinaryResponseResponse(
+      id: json['id'] as String,
+      caseId: json['caseId'] as String,
+      authorName: json['authorName'] as String?,
+      fromEmployee: json['fromEmployee'] as bool? ?? false,
+      message: json['message'] as String,
+      fileUrl: json['fileUrl'] as String?,
+      createdAt: json['createdAt'] as String,
+    );
+  }
+
+  final String id;
+  final String caseId;
+  final String? authorName;
+  final bool fromEmployee;
+  final String message;
+  final String? fileUrl;
+  final String createdAt;
+}
+
 class DisciplinaryCaseResponse {
   const DisciplinaryCaseResponse({
     required this.id,
@@ -46,6 +84,7 @@ class DisciplinaryCaseResponse {
     this.resolutionNotes,
     required this.createdAt,
     required this.actions,
+    required this.responses,
   });
 
   factory DisciplinaryCaseResponse.fromJson(Map<String, dynamic> json) {
@@ -63,6 +102,11 @@ class DisciplinaryCaseResponse {
       actions: (json['actions'] as List<dynamic>? ?? [])
           .map((e) => DisciplinaryActionResponse.fromJson(e as Map<String, dynamic>))
           .toList(),
+      // Empty in a list response — the backend only loads the thread when a
+      // case is fetched on its own, which keeps a page of cases to one query.
+      responses: (json['responses'] as List<dynamic>? ?? [])
+          .map((e) => DisciplinaryResponseResponse.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -77,4 +121,5 @@ class DisciplinaryCaseResponse {
   final String? resolutionNotes;
   final String createdAt;
   final List<DisciplinaryActionResponse> actions;
+  final List<DisciplinaryResponseResponse> responses;
 }

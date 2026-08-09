@@ -108,4 +108,23 @@ class EmployeeRepository {
       throw ApiException.fromDioException(e);
     }
   }
+
+  /// Everyone with a birthday in the next [days] days, soonest first.
+  ///
+  /// Needs `employee:read`, so this is the manager/HR board. The reminders
+  /// themselves reach every employee as notifications regardless of this call,
+  /// and are switched on per organisation in web settings rather than here.
+  Future<List<UpcomingBirthdayResponse>> upcomingBirthdays({int days = 30}) async {
+    try {
+      final response = await _dioClient.dio.get<List<dynamic>>(
+        '/employees/birthdays',
+        queryParameters: {'days': days},
+      );
+      return response.data!
+          .map((e) => UpcomingBirthdayResponse.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
 }

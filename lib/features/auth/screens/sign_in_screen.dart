@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../legal/widgets/legal_consent_footer.dart';
 import '../data/auth_models.dart';
 import '../state/auth_state.dart';
 import '../widgets/auth_shell.dart';
@@ -238,6 +239,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                       ],
                       const Spacer(flex: 2),
+                      const LegalConsentFooter(),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

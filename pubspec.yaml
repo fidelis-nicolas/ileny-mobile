@@ -68,6 +68,12 @@ dependencies:
   firebase_messaging: ^16.4.2
   mobile_scanner: ^7.4.0
 
+  # Opens the terms and privacy policy in the device browser. The documents are
+  # served by the marketing front end, not bundled here — see LegalController in
+  # the API: legal text belongs where it can change without a deploy, and a copy
+  # inside the APK could only be corrected by shipping a Play release.
+  url_launcher: ^6.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

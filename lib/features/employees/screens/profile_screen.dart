@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../legal/legal_documents.dart';
 import '../data/employee_models.dart';
 import '../data/employee_repository.dart';
 import 'employee_avatar.dart';
@@ -181,6 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _InfoTile(label: 'Email', value: employee.email),
                 _InfoTile(label: 'Phone', value: employee.phone),
                 _InfoTile(label: 'Hire date', value: employee.hireDate),
+                const _LegalSection(),
               ],
             ),
           );
@@ -193,6 +195,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final first = employee.firstName.isNotEmpty ? employee.firstName[0] : '';
     final last = employee.lastName.isNotEmpty ? employee.lastName[0] : '';
     return '$first$last'.toUpperCase();
+  }
+}
+
+/// Where the terms and privacy policy are reachable from once signed in.
+/// Google Play expects the policy to be findable inside the app, not only on
+/// the store listing. Both open in the browser — see [LegalDocument].
+class _LegalSection extends StatelessWidget {
+  const _LegalSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        const Divider(color: AppColors.inputBorder),
+        const Padding(
+          padding: EdgeInsets.only(top: 12, bottom: 4),
+          child: Text(
+            'Legal',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          ),
+        ),
+        for (final document in LegalDocument.values)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              document.title,
+              style: const TextStyle(
+                color: AppColors.primaryGreen,
+                fontSize: 14,
+              ),
+            ),
+            trailing: const Icon(
+              Icons.open_in_new,
+              size: 18,
+              color: AppColors.textMuted,
+            ),
+            onTap: () => document.open(context),
+          ),
+      ],
+    );
   }
 }
 

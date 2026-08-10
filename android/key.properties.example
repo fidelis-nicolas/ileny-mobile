@@ -1,0 +1,17 @@
+# Copy to android/key.properties and fill in. That file is gitignored — the
+# keystore and its passwords must never be committed.
+#
+# Generate the upload keystore once:
+#
+#   keytool -genkey -v -keystore %USERPROFILE%\ileny-upload.jks \
+#     -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+#
+# Keep a backup of the .jks somewhere durable. With Play App Signing, Google
+# holds the actual distribution key, so a lost upload key can be reset through
+# the Play Console — but it is a support round-trip you would rather avoid.
+
+storePassword=
+keyPassword=
+keyAlias=upload
+# Absolute path, or relative to the android/app directory.
+storeFile=C:\\Users\\you\\ileny-upload.jks

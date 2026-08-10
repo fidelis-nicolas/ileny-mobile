@@ -1,14 +1,17 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
 
-/// Placeholder Firebase config for push notifications (Phase 5) — every
-/// value below is a stand-in, not a real project. `Firebase.initializeApp`
-/// succeeds with these (it doesn't touch the network at init time), but no
-/// push will actually be delivered until they're replaced: run
-/// `flutterfire configure` against a real Firebase project, or hand-fill
-/// the values from that project's `google-services.json` / console.
-/// `PushNotificationService` (mobile) and `FirebaseConfig` (backend) both
-/// degrade to a no-op until then — see their doc comments.
+/// Firebase config for push notifications (Phase 5), for the `ileny-app`
+/// project. These values mirror `android/app/google-services.json` and must
+/// stay in step with it — the Dart side is what `Firebase.initializeApp`
+/// reads, the JSON is what the Google Services Gradle plugin reads.
+///
+/// The `apiKey` below is not a secret: it ships inside every APK and only
+/// identifies the project to Google's SDKs. Restrict it by package name and
+/// SHA-1 in the Google Cloud console so it can't be reused elsewhere.
+///
+/// Sending still needs the backend's service-account credentials —
+/// `FirebaseConfig` there stays a no-op until those are configured.
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -29,10 +32,10 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_REAL_API_KEY',
-    appId: '1:000000000000:android:0000000000000000000000',
-    messagingSenderId: '000000000000',
-    projectId: 'REPLACE_WITH_REAL_PROJECT_ID',
-    storageBucket: 'REPLACE_WITH_REAL_PROJECT_ID.appspot.com',
+    apiKey: 'AIzaSyCzh5snkx804kv1Zd4nzBvGtV3-Hhz8Oq0',
+    appId: '1:753285259194:android:63891387bd0fb0e0894783',
+    messagingSenderId: '753285259194',
+    projectId: 'ileny-app',
+    storageBucket: 'ileny-app.firebasestorage.app',
   );
 }

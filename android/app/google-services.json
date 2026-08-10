@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "753285259194",
+    "project_id": "ileny-app",
+    "storage_bucket": "ileny-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:753285259194:android:63891387bd0fb0e0894783",
+        "android_client_info": {
+          "package_name": "app.ileny.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzh5snkx804kv1Zd4nzBvGtV3-Hhz8Oq0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -43,6 +43,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+# The root /build/ rule above doesn't reach this one.
+/android/build/
+
+# Release signing — the upload keystore and its passwords. key.properties.example
+# is the committed template; the real thing and any keystore stay local.
+/android/key.properties
+*.jks
+*.keystore
 
 # Claude Code local session state
 .claude/

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/attachment_button.dart';
 import '../data/discipline_models.dart';
 import '../data/discipline_repository.dart';
 import 'case_conversation_screen.dart';
@@ -119,6 +120,21 @@ class _MyQueryDetailScreenState extends State<MyQueryDetailScreen> {
                             Text(
                               action.notes!,
                               style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                            ),
+                          // The evidence behind the action. This screen showed
+                          // no sign one existed, which is the wrong omission on
+                          // the employee's own view: answering a query means
+                          // being able to read what it rests on.
+                          if (action.fileUrl != null)
+                            AttachmentButton(
+                              dense: true,
+                              label: 'View attachment',
+                              download: () =>
+                                  context.read<DisciplineRepository>().downloadAttachment(
+                                        action.fileUrl!,
+                                        label:
+                                            '${humaniseEnum(action.actionType)}-${action.actionDate}',
+                                      ),
                             ),
                         ],
                       ),

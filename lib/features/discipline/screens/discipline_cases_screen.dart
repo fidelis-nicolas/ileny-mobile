@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/attachment_button.dart';
 import '../../../core/widgets/paginated_list_view.dart';
 import '../../employees/data/employee_models.dart';
 import '../data/discipline_models.dart';
@@ -79,11 +80,26 @@ class _CaseTile extends StatelessWidget {
           for (final action in item.actions)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                '${humaniseEnum(action.actionType)} · ${formatCaseDate(action.actionDate)}'
-                '${action.notes != null && action.notes!.isNotEmpty ? ' · ${action.notes}' : ''}'
-                '${action.fileUrl != null ? ' · 📎' : ''}',
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${humaniseEnum(action.actionType)} · ${formatCaseDate(action.actionDate)}'
+                    '${action.notes != null && action.notes!.isNotEmpty ? ' · ${action.notes}' : ''}',
+                    style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                  ),
+                  // Was a 📎 glyph in the text, which announced an attachment
+                  // without offering any way to read it.
+                  if (action.fileUrl != null)
+                    AttachmentButton(
+                      dense: true,
+                      label: 'View attachment',
+                      download: () => context.read<DisciplineRepository>().downloadAttachment(
+                            action.fileUrl!,
+                            label: '${humaniseEnum(action.actionType)}-${action.actionDate}',
+                          ),
+                    ),
+                ],
               ),
             ),
         ],

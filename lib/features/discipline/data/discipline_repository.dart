@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/downloaded_file.dart';
 import '../../../core/network/page_response.dart';
 import 'discipline_models.dart';
 
@@ -181,6 +182,35 @@ class DisciplineRepository {
         data: formData,
       );
       return DisciplinaryResponseResponse.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  /// Fetches an attachment from the absolute `fileUrl` an action or a response
+  /// carries.
+  ///
+  /// The URL is absolute and points at `/files/**` on our own host rather than
+  /// at the API base, so it is handed to dio whole: dio ignores `baseUrl` for an
+  /// absolute URL, and the auth interceptor still attaches the bearer token —
+  /// which is what makes this work at all, since `/files/**` is authenticated.
+  /// `EmployeeAvatar` leans on the same property for photos.
+  ///
+  /// [label] names the saved file, because the backend deliberately does not:
+  /// the stored name is a UUID, and the caller knows what the document is.
+  Future<DownloadedFile> downloadAttachment(String fileUrl, {required String label}) async {
+    try {
+      final response = await _dioClient.dio.get<List<int>>(
+        fileUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return DownloadedFile(
+        bytes: response.data!,
+        filename: filenameFromContentDisposition(
+          response.headers.value('content-disposition'),
+          attachmentFilename(label, fileUrl),
+        ),
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
     }

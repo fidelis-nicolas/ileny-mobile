@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/attachment_button.dart';
 import '../data/discipline_models.dart';
 import '../data/discipline_repository.dart';
 
@@ -230,16 +231,12 @@ class _ResponseBubble extends StatelessWidget {
             Text(response.message),
             if (response.fileUrl != null) ...[
               const SizedBox(height: 6),
-              const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.attach_file, size: 14, color: AppColors.textMuted),
-                  SizedBox(width: 4),
-                  Text(
-                    'Document attached',
-                    style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-                  ),
-                ],
+              AttachmentButton(
+                dense: true,
+                download: () => context.read<DisciplineRepository>().downloadAttachment(
+                      response.fileUrl!,
+                      label: 'response-${_filenameDate(response.createdAt)}',
+                    ),
               ),
             ],
             const SizedBox(height: 4),
@@ -257,6 +254,14 @@ class _ResponseBubble extends StatelessWidget {
     final date = DateTime.tryParse(iso)?.toLocal();
     if (date == null) return '';
     return DateFormat('MMM d, h:mm a').format(date);
+  }
+
+  /// Sortable date for the saved attachment's filename, so a folder of them
+  /// stays in order. Distinct from [_timestamp], which is for reading.
+  String _filenameDate(String iso) {
+    final date = DateTime.tryParse(iso)?.toLocal();
+    if (date == null) return 'attachment';
+    return DateFormat('yyyy-MM-dd').format(date);
   }
 }
 

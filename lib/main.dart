@@ -94,6 +94,7 @@ void main() async {
     disciplineRepository: disciplineRepository,
     payrollRepository: payrollRepository,
     subscriptionRepository: subscriptionRepository,
+    tokenStorage: tokenStorage,
     router: router,
   ));
 }
@@ -113,6 +114,7 @@ class MyApp extends StatelessWidget {
     required this.disciplineRepository,
     required this.payrollRepository,
     required this.subscriptionRepository,
+    required this.tokenStorage,
     required this.router,
   });
 
@@ -128,6 +130,9 @@ class MyApp extends StatelessWidget {
   final DisciplineRepository disciplineRepository;
   final PayrollRepository payrollRepository;
   final SubscriptionRepository subscriptionRepository;
+  /// Provided so EmployeeAvatar can hand the bearer token to the image loader —
+  /// /files/** is authenticated and CachedNetworkImage does not go through dio.
+  final TokenStorage tokenStorage;
   final GoRouter router;
 
   @override
@@ -148,6 +153,7 @@ class MyApp extends StatelessWidget {
         Provider.value(value: disciplineRepository),
         Provider.value(value: payrollRepository),
         Provider.value(value: subscriptionRepository),
+        Provider.value(value: tokenStorage),
       ],
       child: MaterialApp.router(
         title: 'ileny',

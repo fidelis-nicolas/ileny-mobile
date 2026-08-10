@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/downloaded_file.dart';
 import '../../../core/network/page_response.dart';
 import 'payslip_models.dart';
 
@@ -33,26 +34,24 @@ class PayslipRepository {
   }
 
   /// Streams the payslip PDF through the authenticated `/payslips/{id}/download`
-  /// endpoint — payslips are not served through the generic `/files/**` gate.
-  Future<PayslipFile> download(String id) async {
+  /// endpoint. Payslips are reachable through `/files/**` too, but this one
+  /// additionally checks the payslip belongs to the caller when they only hold
+  /// `payslip:read`, so it is the narrower of the two.
+  Future<DownloadedFile> download(String id) async {
     try {
       final response = await _dioClient.dio.get<List<int>>(
         '/payslips/$id/download',
         options: Options(responseType: ResponseType.bytes),
       );
-      return PayslipFile(
+      return DownloadedFile(
         bytes: response.data!,
-        filename: _filenameFrom(response.headers.value('content-disposition')),
+        filename: filenameFromContentDisposition(
+          response.headers.value('content-disposition'),
+          'payslip.pdf',
+        ),
       );
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
     }
-  }
-
-  String _filenameFrom(String? contentDisposition) {
-    const fallback = 'payslip.pdf';
-    if (contentDisposition == null) return fallback;
-    final match = RegExp('filename="?([^";]+)"?').firstMatch(contentDisposition);
-    return match?.group(1) ?? fallback;
   }
 }

@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/network/downloaded_file.dart';
 import '../../../core/network/page_response.dart';
 import 'discipline_models.dart';
 
@@ -85,6 +86,131 @@ class DisciplineRepository {
         data: formData,
       );
       return DisciplinaryActionResponse.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  // --------------------------------------------------------------
+  // The employee's side.
+  //
+  // Everything above needs `discipline:create`/`discipline:read`, which an
+  // ordinary employee does not hold. These four do not: the backend scopes
+  // them to the caller's own employee record, which is why none of them takes
+  // an employee id. An employee who cannot read a query raised against them
+  // cannot answer it, so this is the half that makes the feature a process
+  // rather than a filing cabinet.
+  // --------------------------------------------------------------
+
+  /// Cases raised against the signed-in employee. An account with no linked
+  /// employee record (an admin-only login) gets an empty page, not an error.
+  Future<PageResponse<DisciplinaryCaseResponse>> myCases({
+    int page = 0,
+    int size = 20,
+  }) async {
+    try {
+      final response = await _dioClient.dio.get<Map<String, dynamic>>(
+        '/discipline/cases/me',
+        queryParameters: {'page': page, 'size': size},
+      );
+      return PageResponse.fromJson(response.data!, DisciplinaryCaseResponse.fromJson);
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  /// One of the caller's own cases, with its actions and reply thread. A case
+  /// that is not theirs answers 403.
+  Future<DisciplinaryCaseResponse> myCase(String caseId) async {
+    try {
+      final response = await _dioClient.dio.get<Map<String, dynamic>>(
+        '/discipline/cases/me/$caseId',
+      );
+      return DisciplinaryCaseResponse.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  /// The thread on a case, oldest first. Readable by the employee the case is
+  /// about *and* by case handlers, so both sides of the app use this one call.
+  Future<List<DisciplinaryResponseResponse>> caseResponses(String caseId) async {
+    try {
+      final response = await _dioClient.dio.get<List<dynamic>>(
+        '/discipline/cases/$caseId/responses',
+      );
+      return response.data!
+          .map((e) => DisciplinaryResponseResponse.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  /// Adds a message to a case's thread.
+  ///
+  /// One endpoint for both sides — nothing here says which side the message is
+  /// from, because the server decides that from who is calling. Sending it
+  /// would defeat the point.
+  Future<DisciplinaryResponseResponse> addResponse({
+    required String caseId,
+    required String message,
+  }) async {
+    try {
+      final response = await _dioClient.dio.post<Map<String, dynamic>>(
+        '/discipline/cases/$caseId/responses',
+        data: {'message': message},
+      );
+      return DisciplinaryResponseResponse.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  /// Attaches evidence to a response. Only its author may attach to it, so
+  /// this answers 403 on someone else's message.
+  Future<DisciplinaryResponseResponse> uploadResponseDocument(
+    String responseId,
+    String filePath,
+  ) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
+      });
+      final response = await _dioClient.dio.post<Map<String, dynamic>>(
+        '/discipline/responses/$responseId/document',
+        data: formData,
+      );
+      return DisciplinaryResponseResponse.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  /// Fetches an attachment from the absolute `fileUrl` an action or a response
+  /// carries.
+  ///
+  /// The URL is absolute and points at `/files/**` on our own host rather than
+  /// at the API base, so it is handed to dio whole: dio ignores `baseUrl` for an
+  /// absolute URL, and the auth interceptor still attaches the bearer token —
+  /// which is what makes this work at all, since `/files/**` is authenticated.
+  /// `EmployeeAvatar` leans on the same property for photos.
+  ///
+  /// [label] names the saved file, because the backend deliberately does not:
+  /// the stored name is a UUID, and the caller knows what the document is.
+  Future<DownloadedFile> downloadAttachment(String fileUrl, {required String label}) async {
+    try {
+      final response = await _dioClient.dio.get<List<int>>(
+        fileUrl,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return DownloadedFile(
+        bytes: response.data!,
+        filename: filenameFromContentDisposition(
+          response.headers.value('content-disposition'),
+          attachmentFilename(label, fileUrl),
+        ),
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
     }

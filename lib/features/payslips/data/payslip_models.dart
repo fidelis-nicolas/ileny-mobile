@@ -47,12 +47,3 @@ class PayslipResponse {
   final String generatedAt;
   final String? emailedAt;
 }
-
-/// Downloaded payslip PDF bytes plus the filename suggested by the
-/// backend's `Content-Disposition` header.
-class PayslipFile {
-  const PayslipFile({required this.bytes, required this.filename});
-
-  final List<int> bytes;
-  final String filename;
-}

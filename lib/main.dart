@@ -17,6 +17,7 @@ import 'features/announcements/data/announcement_repository.dart';
 import 'features/attendance/data/attendance_repository.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/auth/state/auth_state.dart';
+import 'features/billing/data/subscription_repository.dart';
 import 'features/discipline/data/discipline_repository.dart';
 import 'features/employees/data/employee_repository.dart';
 import 'features/leave/data/leave_repository.dart';
@@ -59,6 +60,7 @@ void main() async {
   final payslipRepository = PayslipRepository(dioClient: dioClient);
   final disciplineRepository = DisciplineRepository(dioClient: dioClient);
   final payrollRepository = PayrollRepository(dioClient: dioClient);
+  final subscriptionRepository = SubscriptionRepository(dioClient: dioClient);
   final notificationsState = NotificationsState(repository: notificationRepository);
   final pushNotificationService = PushNotificationService(
     notificationRepository: notificationRepository,
@@ -91,6 +93,8 @@ void main() async {
     payslipRepository: payslipRepository,
     disciplineRepository: disciplineRepository,
     payrollRepository: payrollRepository,
+    subscriptionRepository: subscriptionRepository,
+    tokenStorage: tokenStorage,
     router: router,
   ));
 }
@@ -109,6 +113,8 @@ class MyApp extends StatelessWidget {
     required this.payslipRepository,
     required this.disciplineRepository,
     required this.payrollRepository,
+    required this.subscriptionRepository,
+    required this.tokenStorage,
     required this.router,
   });
 
@@ -123,6 +129,10 @@ class MyApp extends StatelessWidget {
   final PayslipRepository payslipRepository;
   final DisciplineRepository disciplineRepository;
   final PayrollRepository payrollRepository;
+  final SubscriptionRepository subscriptionRepository;
+  /// Provided so EmployeeAvatar can hand the bearer token to the image loader —
+  /// /files/** is authenticated and CachedNetworkImage does not go through dio.
+  final TokenStorage tokenStorage;
   final GoRouter router;
 
   @override
@@ -142,6 +152,8 @@ class MyApp extends StatelessWidget {
         Provider.value(value: payslipRepository),
         Provider.value(value: disciplineRepository),
         Provider.value(value: payrollRepository),
+        Provider.value(value: subscriptionRepository),
+        Provider.value(value: tokenStorage),
       ],
       child: MaterialApp.router(
         title: 'ileny',

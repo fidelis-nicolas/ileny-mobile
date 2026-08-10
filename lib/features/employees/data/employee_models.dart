@@ -72,6 +72,45 @@ class EmployeeResponse {
       ].join(' ');
 }
 
+/// An employee whose birthday is coming up (`GET /employees/birthdays`).
+///
+/// Carries the *next* occurrence rather than the date of birth, and no birth
+/// year at all — the backend withholds it deliberately, since a birthday board
+/// that publishes everyone's age is a different and much less welcome feature.
+class UpcomingBirthdayResponse {
+  const UpcomingBirthdayResponse({
+    required this.employeeId,
+    required this.fullName,
+    this.photoUrl,
+    this.departmentName,
+    this.positionTitle,
+    required this.nextBirthday,
+    required this.daysUntil,
+  });
+
+  factory UpcomingBirthdayResponse.fromJson(Map<String, dynamic> json) {
+    return UpcomingBirthdayResponse(
+      employeeId: json['employeeId'] as String,
+      fullName: json['fullName'] as String? ?? '',
+      photoUrl: json['photoUrl'] as String?,
+      departmentName: json['departmentName'] as String?,
+      positionTitle: json['positionTitle'] as String?,
+      nextBirthday: json['nextBirthday'] as String,
+      daysUntil: (json['daysUntil'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  final String employeeId;
+  final String fullName;
+  final String? photoUrl;
+  final String? departmentName;
+  final String? positionTitle;
+  final String nextBirthday;
+
+  /// 0 on the day itself.
+  final int daysUntil;
+}
+
 /// A tenant role available for assignment when inviting an employee
 /// (`GET /roles`, ORG_ADMIN-only per `user:create`).
 class RoleResponse {

@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/attachment_button.dart';
 import '../../../core/widgets/paginated_list_view.dart';
 import '../../employees/data/employee_models.dart';
 import '../data/discipline_models.dart';
 import '../data/discipline_repository.dart';
+import 'case_conversation_screen.dart';
+import 'discipline_labels.dart';
 import 'new_discipline_case_screen.dart';
 
 class DisciplineCasesScreen extends StatefulWidget {
@@ -60,10 +63,10 @@ class _CaseTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ExpansionTile(
       title: Text(
-        item.category,
+        humaniseEnum(item.category),
         style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
       ),
-      subtitle: Text('${item.incidentDate} · ${item.status}'),
+      subtitle: Text('${formatCaseDate(item.incidentDate)} · ${humaniseEnum(item.status)}'),
       childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       expandedCrossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -77,14 +80,49 @@ class _CaseTile extends StatelessWidget {
           for (final action in item.actions)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text(
-                '${action.actionType} · ${action.actionDate}'
-                '${action.notes != null && action.notes!.isNotEmpty ? ' · ${action.notes}' : ''}'
-                '${action.fileUrl != null ? ' · 📎' : ''}',
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${humaniseEnum(action.actionType)} · ${formatCaseDate(action.actionDate)}'
+                    '${action.notes != null && action.notes!.isNotEmpty ? ' · ${action.notes}' : ''}',
+                    style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                  ),
+                  // Was a 📎 glyph in the text, which announced an attachment
+                  // without offering any way to read it.
+                  if (action.fileUrl != null)
+                    AttachmentButton(
+                      dense: true,
+                      label: 'View attachment',
+                      download: () => context.read<DisciplineRepository>().downloadAttachment(
+                            action.fileUrl!,
+                            label: '${humaniseEnum(action.actionType)}-${action.actionDate}',
+                          ),
+                    ),
+                ],
               ),
             ),
         ],
+        const SizedBox(height: 10),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            icon: const Icon(Icons.forum_outlined, size: 18),
+            // The employee's answer to this case, and HR's reply to it. The
+            // reply count isn't shown here: this list endpoint returns cases
+            // without their thread (one query per page, by design), so a count
+            // would have to be either fetched per row or quietly wrong.
+            label: const Text('Conversation'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => CaseConversationScreen(
+                  caseId: item.id,
+                  title: humaniseEnum(item.category),
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

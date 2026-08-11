@@ -90,14 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _QuickAction(
-            icon: Icons.people_outline,
-            label: 'Employee Directory',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const DirectoryScreen()),
-            ),
-          ),
-          const SizedBox(height: 12),
           // Ungated: every employee needs to reach the queries raised against
           // them. The HR-side case list is elsewhere and stays role-gated.
           _QuickAction(
@@ -108,6 +100,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           if (isManager) ...[
+            const SizedBox(height: 12),
+            // Role-gated to match the backend: the directory and every record it
+            // opens need employee:read, which EMPLOYEE deliberately does not hold
+            // (see RoleSeeder). Ungated, this offered every employee a tap-path
+            // into colleagues' contact details, bank accounts, and documents.
+            _QuickAction(
+              icon: Icons.people_outline,
+              label: 'Employee Directory',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const DirectoryScreen()),
+              ),
+            ),
             const SizedBox(height: 12),
             _QuickAction(
               icon: Icons.payments_outlined,

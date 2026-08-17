@@ -16,6 +16,8 @@ import '../../employees/screens/directory_screen.dart';
 import '../../employees/screens/employee_avatar.dart';
 import '../../employees/screens/profile_screen.dart';
 import '../../payroll/screens/payroll_cycles_screen.dart';
+import '../../performance/screens/my_appraisals_screen.dart';
+import '../../performance/screens/my_goals_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -97,6 +99,26 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'My Queries',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const MyQueriesScreen()),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Also ungated. Mobile carries the employee's half of performance —
+          // their self-assessment and the outcome. Templates, cycles, and
+          // writing reviews are administrative jobs done sitting down and stay
+          // on the web client.
+          _QuickAction(
+            icon: Icons.trending_up_outlined,
+            label: 'My Appraisals',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MyAppraisalsScreen()),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _QuickAction(
+            icon: Icons.flag_outlined,
+            label: 'My Goals',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MyGoalsScreen()),
             ),
           ),
           if (isManager) ...[

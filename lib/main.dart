@@ -23,6 +23,7 @@ import 'features/employees/data/employee_repository.dart';
 import 'features/leave/data/leave_repository.dart';
 import 'features/notifications/data/notification_repository.dart';
 import 'features/payroll/data/payroll_repository.dart';
+import 'features/performance/data/performance_repository.dart';
 import 'features/payslips/data/payslip_repository.dart';
 import 'features/notifications/state/notifications_state.dart';
 
@@ -59,6 +60,7 @@ void main() async {
   final leaveRepository = LeaveRepository(dioClient: dioClient);
   final payslipRepository = PayslipRepository(dioClient: dioClient);
   final disciplineRepository = DisciplineRepository(dioClient: dioClient);
+  final performanceRepository = PerformanceRepository(dioClient: dioClient);
   final payrollRepository = PayrollRepository(dioClient: dioClient);
   final subscriptionRepository = SubscriptionRepository(dioClient: dioClient);
   final notificationsState = NotificationsState(repository: notificationRepository);
@@ -92,6 +94,7 @@ void main() async {
     leaveRepository: leaveRepository,
     payslipRepository: payslipRepository,
     disciplineRepository: disciplineRepository,
+    performanceRepository: performanceRepository,
     payrollRepository: payrollRepository,
     subscriptionRepository: subscriptionRepository,
     tokenStorage: tokenStorage,
@@ -112,6 +115,7 @@ class MyApp extends StatelessWidget {
     required this.leaveRepository,
     required this.payslipRepository,
     required this.disciplineRepository,
+    required this.performanceRepository,
     required this.payrollRepository,
     required this.subscriptionRepository,
     required this.tokenStorage,
@@ -128,6 +132,7 @@ class MyApp extends StatelessWidget {
   final LeaveRepository leaveRepository;
   final PayslipRepository payslipRepository;
   final DisciplineRepository disciplineRepository;
+  final PerformanceRepository performanceRepository;
   final PayrollRepository payrollRepository;
   final SubscriptionRepository subscriptionRepository;
   /// Provided so EmployeeAvatar can hand the bearer token to the image loader —
@@ -151,6 +156,7 @@ class MyApp extends StatelessWidget {
         Provider.value(value: leaveRepository),
         Provider.value(value: payslipRepository),
         Provider.value(value: disciplineRepository),
+        Provider.value(value: performanceRepository),
         Provider.value(value: payrollRepository),
         Provider.value(value: subscriptionRepository),
         Provider.value(value: tokenStorage),

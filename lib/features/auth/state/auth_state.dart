@@ -31,6 +31,26 @@ class AuthState extends ChangeNotifier {
 
   List<String> get roleNames => currentUser?.roleNames ?? const [];
 
+  /// The flattened permission set — what this account may actually do.
+  List<String> get permissions => currentUser?.permissions ?? const [];
+
+  /// True when the account holds at least one of [required].
+  ///
+  /// **Prefer this to [hasAnyRole].** A tenant can change what its HOD or any custom role
+  /// may do, so a role name no longer implies a fixed set of abilities: gating on the name
+  /// offers screens the server refuses and hides ones it would allow. These strings are the
+  /// same ones the backend's @PreAuthorize compares against, so the two cannot drift.
+  ///
+  /// Any rather than all, because the endpoints behind a screen are often an `or` — the
+  /// attendance register takes `attendance:read` or `attendance:read:dept`, and requiring
+  /// both would hide it from the head of department the narrow one exists for.
+  bool hasAnyPermission(Iterable<String> required) =>
+      required.any(permissions.contains);
+
+  /// True when the account is on any of [roles].
+  ///
+  /// Only for the few checks that are genuinely about identity rather than capability —
+  /// reach for [hasAnyPermission] otherwise.
   bool hasAnyRole(Iterable<String> roles) => roles.any(roleNames.contains);
 
   Future<void> bootstrap() async {

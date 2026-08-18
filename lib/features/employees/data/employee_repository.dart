@@ -60,7 +60,7 @@ class EmployeeRepository {
   }
 
   /// ORG_ADMIN-only in practice — the backend gates both this and [roles]
-  /// on `user:create`, which HR_MANAGER does not hold (see [kOrgAdminRoles]).
+  /// on `user:create`, which a stock HR_MANAGER does not hold (see [kInvitePermissions]).
   Future<void> invite(String id, List<String> roleIds) async {
     try {
       await _dioClient.dio.post<Map<String, dynamic>>(

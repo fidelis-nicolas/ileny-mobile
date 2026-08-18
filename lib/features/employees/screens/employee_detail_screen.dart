@@ -14,7 +14,7 @@ const _statusOptions = ['ACTIVE', 'INACTIVE', 'TERMINATED', 'SUSPENDED'];
 
 /// Directory drill-down: read-only info for every role, plus Tier B
 /// manager/admin actions (status change, invite, discipline cases) gated
-/// per [kManagerRoles]/[kOrgAdminRoles].
+/// per [kManagerPermissions]/[kInvitePermissions].
 class EmployeeDetailScreen extends StatefulWidget {
   const EmployeeDetailScreen({super.key, required this.employee});
 
@@ -140,8 +140,8 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthState>();
-    final isManager = authState.hasAnyRole(kManagerRoles);
-    final canInvite = authState.hasAnyRole(kOrgAdminRoles);
+    final isManager = authState.hasAnyPermission(kManagerPermissions);
+    final canInvite = authState.hasAnyPermission(kInvitePermissions);
 
     return Scaffold(
       appBar: AppBar(title: Text(_employee.fullName)),

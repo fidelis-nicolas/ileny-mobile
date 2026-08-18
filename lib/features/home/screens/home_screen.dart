@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     final authState = context.read<AuthState>();
-    if (authState.hasAnyRole(kManagerRoles)) {
+    if (authState.hasAnyPermission(kManagerPermissions)) {
       _kpiFuture = _loadKpis();
       // `/employees/birthdays` needs `employee:read`, so this is a manager
       // view. Employees still get their own greeting as a notification.
@@ -62,8 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthState>();
     final user = authState.currentUser;
-    final isManager = authState.hasAnyRole(kManagerRoles);
-    final isOrgAdmin = authState.hasAnyRole(kOrgAdminRoles);
+    final isManager = authState.hasAnyPermission(kManagerPermissions);
+    final isOrgAdmin = authState.hasAnyPermission(kInvitePermissions);
 
     return Scaffold(
       appBar: AppBar(

@@ -79,7 +79,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
   @override
   Widget build(BuildContext context) {
     final repository = context.read<LeaveRepository>();
-    final isManager = context.watch<AuthState>().hasAnyRole(kTeamScopedRoles);
+    final isManager = context.watch<AuthState>().hasAnyPermission(kTeamLeavePermissions);
 
     return Scaffold(
       appBar: AppBar(

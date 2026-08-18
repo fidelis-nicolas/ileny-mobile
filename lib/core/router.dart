@@ -10,12 +10,15 @@ import '../features/home/screens/home_shell.dart';
 /// account-recovery pair, which by definition are used while signed out.
 const _publicRoutes = {'/login', '/forgot-password', '/reset-password'};
 
-/// Redirect helper for role-gated routes: return this from a GoRoute's
-/// own `redirect` once a manager/admin-only route exists (plan.txt
-/// Phase 4 Tier A/B). No route needs it yet in Phase 0.
-String? roleGuardRedirect(AuthState authState, Set<String> requiredRoles) {
-  if (requiredRoles.isEmpty) return null;
-  return authState.hasAnyRole(requiredRoles) ? null : '/home';
+/// Redirect helper for permission-gated routes: return this from a GoRoute's own
+/// `redirect` once a manager/admin-only route exists (plan.txt Phase 4 Tier A/B). No route
+/// needs it yet.
+///
+/// Takes permissions rather than role names: tenants can change what a role may do, so the
+/// name no longer says what its holder can reach. See [AuthState.hasAnyPermission].
+String? permissionGuardRedirect(AuthState authState, Set<String> requiredPermissions) {
+  if (requiredPermissions.isEmpty) return null;
+  return authState.hasAnyPermission(requiredPermissions) ? null : '/home';
 }
 
 GoRouter buildRouter(AuthState authState) {

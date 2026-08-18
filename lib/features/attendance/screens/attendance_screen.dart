@@ -199,7 +199,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     final repository = context.read<AttendanceRepository>();
-    final isManager = context.watch<AuthState>().hasAnyRole(kTeamScopedRoles);
+    final isManager = context.watch<AuthState>().hasAnyPermission(kTeamAttendancePermissions);
 
     return Scaffold(
       appBar: AppBar(

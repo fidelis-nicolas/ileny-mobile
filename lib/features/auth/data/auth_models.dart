@@ -76,6 +76,7 @@ class MeResponse {
     required this.tenantId,
     required this.email,
     required this.roleNames,
+    required this.permissions,
     this.employeeId,
     this.employeeFullName,
     this.subscriptionPlanName,
@@ -92,6 +93,10 @@ class MeResponse {
       tenantId: json['tenantId'] as String,
       email: json['email'] as String,
       roleNames: (json['roleNames'] as List<dynamic>).cast<String>(),
+      // Tolerates absence so a client can talk to a backend that predates the field
+      // rather than failing to parse the session outright.
+      permissions:
+          (json['permissions'] as List<dynamic>?)?.cast<String>() ?? const [],
       employeeId: json['employeeId'] as String?,
       employeeFullName: json['employeeFullName'] as String?,
       subscriptionPlanName: json['subscriptionPlanName'] as String?,
@@ -107,6 +112,13 @@ class MeResponse {
   final String tenantId;
   final String email;
   final List<String> roleNames;
+
+  /// Every permission the account holds, flattened across its roles — the same set
+  /// the backend's @PreAuthorize checks.
+  ///
+  /// Gate on this rather than on [roleNames]. A tenant can change what its HOD or any
+  /// custom role may do, so a role name no longer implies a fixed set of abilities.
+  final List<String> permissions;
   final String? employeeId;
   final String? employeeFullName;
   final String? subscriptionPlanName;

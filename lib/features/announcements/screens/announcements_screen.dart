@@ -32,7 +32,7 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
   @override
   Widget build(BuildContext context) {
     final repository = context.read<AnnouncementRepository>();
-    final isManager = context.watch<AuthState>().hasAnyRole(kManagerRoles);
+    final isManager = context.watch<AuthState>().hasAnyPermission(kAnnouncementAuthorPermissions);
 
     return Scaffold(
       appBar: AppBar(

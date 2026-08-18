@@ -57,15 +57,15 @@ class _PayrollCyclesScreenState extends State<PayrollCyclesScreen> {
                 final cycle = cycles[index];
                 final period = DateFormat('MMMM yyyy').format(DateTime(cycle.year, cycle.month));
                 return ListTile(
-                  leading: const Icon(Icons.payments_outlined, color: AppColors.primaryGreen),
+                  leading: Icon(Icons.payments_outlined, color: context.palette.primary),
                   title: Text(
                     period,
-                    style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
                   ),
                   subtitle: Text(
                     '${cycle.employeeCount} employee(s) · net ${cycle.totalNet.toStringAsFixed(2)}',
                   ),
-                  trailing: Text(cycle.status, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                  trailing: Text(cycle.status, style: TextStyle(color: context.palette.textMuted, fontSize: 12)),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => PayrollCycleDetailScreen(cycle: cycle)),
                   ),
@@ -85,7 +85,7 @@ class _PayrollCyclesScreenState extends State<PayrollCyclesScreen> {
           SizedBox(
             height: constraints.maxHeight,
             child: Center(
-              child: Text(message, style: const TextStyle(color: AppColors.textMuted)),
+              child: Text(message, style: TextStyle(color: context.palette.textMuted)),
             ),
           ),
         ],

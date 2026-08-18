@@ -52,10 +52,10 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
         fetchPage: (page, size) => repository.listPublished(page: page, size: size),
         itemBuilder: (context, announcement) {
           return ListTile(
-            leading: const Icon(Icons.campaign_outlined, color: AppColors.primaryGreen),
+            leading: Icon(Icons.campaign_outlined, color: context.palette.primary),
             title: Text(
               announcement.title,
-              style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+              style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
               announcement.body,

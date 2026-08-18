@@ -216,7 +216,7 @@ class _NewDisciplineCaseScreenState extends State<NewDisciplineCaseScreen> {
             ],
             if (_error != null) ...[
               const SizedBox(height: 16),
-              Text(_error!, style: const TextStyle(color: AppColors.accentOrange, fontSize: 13)),
+              Text(_error!, style: TextStyle(color: context.palette.danger, fontSize: 13)),
             ],
             const SizedBox(height: 24),
             ElevatedButton(
@@ -249,7 +249,7 @@ class _DateField extends StatelessWidget {
       onTap: onTap,
       child: InputDecorator(
         decoration: InputDecoration(labelText: label),
-        child: Text(value, style: const TextStyle(color: AppColors.primaryGreen)),
+        child: Text(value, style: TextStyle(color: context.palette.primary)),
       ),
     );
   }

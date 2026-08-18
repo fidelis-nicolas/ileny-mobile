@@ -79,7 +79,7 @@ class _LeaveScreenState extends State<LeaveScreen> {
   @override
   Widget build(BuildContext context) {
     final repository = context.read<LeaveRepository>();
-    final isManager = context.watch<AuthState>().hasAnyRole(kManagerRoles);
+    final isManager = context.watch<AuthState>().hasAnyRole(kTeamScopedRoles);
 
     return Scaffold(
       appBar: AppBar(
@@ -108,12 +108,12 @@ class _LeaveScreenState extends State<LeaveScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            const Text(
+            Text(
               'Balances',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primaryGreen,
+                color: context.palette.primary,
               ),
             ),
             const SizedBox(height: 8),
@@ -123,11 +123,11 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (_balancesError != null)
-              Text(_balancesError!, style: const TextStyle(color: AppColors.accentOrange))
+              Text(_balancesError!, style: TextStyle(color: context.palette.danger))
             else if (_balances.isEmpty)
-              const Text(
+              Text(
                 'No leave balances set up yet.',
-                style: TextStyle(color: AppColors.textMuted),
+                style: TextStyle(color: context.palette.textMuted),
               )
             else
               ..._balances.map((b) => Padding(
@@ -135,12 +135,12 @@ class _LeaveScreenState extends State<LeaveScreen> {
                     child: _BalanceCard(balance: b),
                   )),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'History',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primaryGreen,
+                color: context.palette.primary,
               ),
             ),
             const SizedBox(height: 8),
@@ -171,7 +171,7 @@ class _BalanceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cream,
+        color: context.palette.surfaceAlt,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -179,12 +179,12 @@ class _BalanceCard extends StatelessWidget {
           Expanded(
             child: Text(
               balance.leaveTypeName,
-              style: const TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryGreen),
+              style: TextStyle(fontWeight: FontWeight.w600, color: context.palette.primary),
             ),
           ),
           Text(
             '${balance.remainingDays.toStringAsFixed(1)} / ${balance.totalDays.toStringAsFixed(1)} days',
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: TextStyle(color: context.palette.textMuted, fontSize: 13),
           ),
         ],
       ),
@@ -197,15 +197,17 @@ class _RequestTile extends StatelessWidget {
 
   final LeaveRequestResponse request;
 
-  Color get _statusColor {
+  /// Takes the context because the palette resolves against the ambient
+  /// brightness — the same status is a different shade in dark mode.
+  Color _statusColor(BuildContext context) {
     switch (request.status) {
       case 'APPROVED':
-        return AppColors.primaryGreen;
+        return context.palette.success;
       case 'REJECTED':
       case 'CANCELLED':
-        return AppColors.accentOrange;
+        return context.palette.danger;
       default:
-        return AppColors.textMuted;
+        return context.palette.textMuted;
     }
   }
 
@@ -214,11 +216,17 @@ class _RequestTile extends StatelessWidget {
     return ListTile(
       title: Text(
         '${request.leaveTypeName} · ${request.startDate} → ${request.endDate}',
-        style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+        style: Theme.of(context).textTheme.titleSmall,
       ),
       subtitle: Text('${request.daysRequested.toStringAsFixed(1)} day(s)'
           '${request.reason != null && request.reason!.isNotEmpty ? ' · ${request.reason}' : ''}'),
-      trailing: Text(request.status, style: TextStyle(color: _statusColor, fontSize: 12)),
+      trailing: Text(
+        request.status,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: _statusColor(context),
+              fontWeight: FontWeight.w600,
+            ),
+      ),
     );
   }
 }

@@ -165,6 +165,10 @@ class MyApp extends StatelessWidget {
         title: 'ileny',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        // Follows the device setting. There is no in-app override yet; if one
+        // is added later it belongs in a settings store read here.
+        themeMode: ThemeMode.system,
         routerConfig: router,
       ),
     );

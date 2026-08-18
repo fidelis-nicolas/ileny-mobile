@@ -199,7 +199,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     final repository = context.read<AttendanceRepository>();
-    final isManager = context.watch<AuthState>().hasAnyRole(kManagerRoles);
+    final isManager = context.watch<AuthState>().hasAnyRole(kTeamScopedRoles);
 
     return Scaffold(
       appBar: AppBar(
@@ -239,10 +239,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
             if (_readDenied) ...[
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 "Your account doesn't have permission to view attendance "
                 'history yet — you can still clock in/out above.',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                style: TextStyle(color: context.palette.textMuted, fontSize: 12),
               ),
             ],
             if (_summary != null) ...[
@@ -250,27 +250,27 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               _SummaryCard(summary: _summary!),
             ],
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'History',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primaryGreen,
+                color: context.palette.primary,
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
+            Text(
               'Tap a day to request a correction.',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 8),
             SizedBox(
               height: 420,
               child: _readDenied
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         'History is unavailable for your role right now.',
-                        style: TextStyle(color: AppColors.textMuted),
+                        style: TextStyle(color: context.palette.textMuted),
                         textAlign: TextAlign.center,
                       ),
                     )
@@ -322,15 +322,15 @@ class _TodayCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cream,
+        color: context.palette.surfaceAlt,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Today",
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: TextStyle(color: context.palette.textMuted, fontSize: 13),
           ),
           const SizedBox(height: 6),
           Text(
@@ -341,15 +341,15 @@ class _TodayCard extends StatelessWidget {
                     : loading
                         ? 'Checking status…'
                         : 'Not clocked in yet',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
-              color: AppColors.primaryGreen,
+              color: context.palette.primary,
             ),
           ),
           if (error != null) ...[
             const SizedBox(height: 8),
-            Text(error!, style: const TextStyle(color: AppColors.accentOrange, fontSize: 12)),
+            Text(error!, style: TextStyle(color: context.palette.danger, fontSize: 12)),
           ],
           const SizedBox(height: 16),
           SizedBox(
@@ -434,21 +434,21 @@ class _StatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.inputBorder),
+        border: Border.all(color: context.palette.border),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: AppColors.primaryGreen,
+              color: context.palette.primary,
             ),
           ),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          Text(label, style: TextStyle(color: context.palette.textMuted, fontSize: 12)),
         ],
       ),
     );
@@ -467,7 +467,7 @@ class _HistoryTile extends StatelessWidget {
       onTap: onRequestCorrection,
       title: Text(
         record.attendanceDate,
-        style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+        style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
         record.workHours != null
@@ -477,9 +477,9 @@ class _HistoryTile extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(record.status, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          Text(record.status, style: TextStyle(color: context.palette.textMuted, fontSize: 12)),
           const SizedBox(width: 6),
-          const Icon(Icons.chevron_right, size: 18, color: AppColors.textMuted),
+          Icon(Icons.chevron_right, size: 18, color: context.palette.textMuted),
         ],
       ),
     );

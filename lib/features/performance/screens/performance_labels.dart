@@ -49,27 +49,30 @@ String formatPerformanceDate(String iso) {
 
 /// Colour tracks how much attention the item still needs — amber while someone
 /// is being waited on, green once done, muted once it no longer counts.
-Color appraisalStatusColour(String status) {
+///
+/// Takes a [BuildContext] because the palette resolves against the ambient
+/// brightness: the same status is a different shade in dark mode.
+Color appraisalStatusColour(BuildContext context, String status) {
   switch (status) {
     case 'PENDING_SELF':
     case 'PENDING_ACKNOWLEDGEMENT':
-      return AppColors.accentOrange;
+      return context.palette.warning;
     case 'COMPLETED':
-      return AppColors.primaryGreen;
+      return context.palette.success;
     default:
-      return AppColors.textMuted;
+      return context.palette.textMuted;
   }
 }
 
-Color goalStatusColour(String status) {
+Color goalStatusColour(BuildContext context, String status) {
   switch (status) {
     case 'ACHIEVED':
-      return AppColors.primaryGreen;
+      return context.palette.success;
     case 'MISSED':
-      return AppColors.accentOrange;
+      return context.palette.danger;
     case 'ACTIVE':
-      return AppColors.primaryGreen;
+      return context.palette.primary;
     default:
-      return AppColors.textMuted;
+      return context.palette.textMuted;
   }
 }

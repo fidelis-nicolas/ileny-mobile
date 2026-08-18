@@ -47,7 +47,7 @@ class _AppraisalTile extends StatelessWidget {
     return ListTile(
       title: Text(
         item.cycleName,
-        style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+        style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,7 +56,7 @@ class _AppraisalTile extends StatelessWidget {
           Text(
             appraisalStatusLabel(item.status),
             style: TextStyle(
-              color: appraisalStatusColour(item.status),
+              color: appraisalStatusColour(context, item.status),
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -65,7 +65,7 @@ class _AppraisalTile extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               item.ratingBand!,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 12),
             ),
           ],
         ],
@@ -77,12 +77,12 @@ class _AppraisalTile extends StatelessWidget {
           if (trailingScore != null)
             Text(
               '${trailingScore.toStringAsFixed(0)}%',
-              style: const TextStyle(
-                color: AppColors.primaryGreen,
+              style: TextStyle(
+                color: context.palette.primary,
                 fontWeight: FontWeight.w700,
               ),
             ),
-          const Icon(Icons.chevron_right, color: AppColors.textMuted),
+          Icon(Icons.chevron_right, color: context.palette.textMuted),
         ],
       ),
       onTap: () => Navigator.of(context).push(

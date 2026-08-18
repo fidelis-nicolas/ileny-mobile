@@ -96,7 +96,7 @@ class _LeaveApprovalsScreenState extends State<LeaveApprovalsScreen> {
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.cream,
+                color: context.palette.surfaceAlt,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -104,8 +104,8 @@ class _LeaveApprovalsScreenState extends State<LeaveApprovalsScreen> {
                 children: [
                   Text(
                     request.employeeFullName,
-                    style: const TextStyle(
-                      color: AppColors.primaryGreen,
+                    style: TextStyle(
+                      color: context.palette.primary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -113,7 +113,7 @@ class _LeaveApprovalsScreenState extends State<LeaveApprovalsScreen> {
                   Text(
                     '${request.leaveTypeName} · ${request.startDate} → ${request.endDate} · '
                     '${request.daysRequested.toStringAsFixed(1)} day(s)',
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                    style: TextStyle(color: context.palette.textMuted, fontSize: 13),
                   ),
                   if (request.reason != null && request.reason!.isNotEmpty) ...[
                     const SizedBox(height: 4),

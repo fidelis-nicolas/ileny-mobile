@@ -49,20 +49,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ? Icons.notifications_none
                   : Icons.notifications,
               color: notification.isRead
-                  ? AppColors.textMuted
-                  : AppColors.accentOrange,
+                  ? context.palette.textMuted
+                  : context.palette.accent,
             ),
             title: Text(
               notification.title,
               style: TextStyle(
-                color: AppColors.primaryGreen,
+                color: context.palette.primary,
                 fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.w700,
               ),
             ),
             subtitle: Text(notification.message),
             trailing: Text(
               _relativeTime(notification.createdAt),
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 11),
             ),
           );
         },

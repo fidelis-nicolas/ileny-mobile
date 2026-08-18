@@ -28,14 +28,14 @@ class EmployeeAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (photoUrl == null || photoUrl!.isEmpty) {
-      return _initialsAvatar();
+      return _initialsAvatar(context);
     }
 
     final token = context.read<TokenStorage>().accessToken;
 
     return CircleAvatar(
       radius: radius,
-      backgroundColor: AppColors.cream,
+      backgroundColor: context.palette.surfaceAlt,
       child: ClipOval(
         child: CachedNetworkImage(
           imageUrl: photoUrl!,
@@ -46,27 +46,27 @@ class EmployeeAvatar extends StatelessWidget {
           // Initials stay visible while loading and if the fetch fails, so a
           // slow or broken image degrades to what was shown before rather than
           // to a broken-image glyph.
-          placeholder: (context, url) => _initialsLabel(),
-          errorWidget: (context, url, error) => _initialsLabel(),
+          placeholder: (context, url) => _initialsLabel(context),
+          errorWidget: (context, url, error) => _initialsLabel(context),
         ),
       ),
     );
   }
 
-  Widget _initialsAvatar() {
+  Widget _initialsAvatar(BuildContext context) {
     return CircleAvatar(
       radius: radius,
-      backgroundColor: AppColors.cream,
-      child: _initialsLabel(),
+      backgroundColor: context.palette.primarySoft,
+      child: _initialsLabel(context),
     );
   }
 
-  Widget _initialsLabel() {
+  Widget _initialsLabel(BuildContext context) {
     return Center(
       child: Text(
         initials,
         style: TextStyle(
-          color: AppColors.primaryGreen,
+          color: context.palette.primary,
           fontWeight: FontWeight.w700,
           // Scale with the avatar: the same fixed size looked lost at radius 32
           // on the profile screen and clipped at radius 14 in the app bar.

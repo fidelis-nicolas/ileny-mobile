@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 
 import '../../../core/auth/roles.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_shape.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../auth/data/auth_models.dart';
 import '../../auth/state/auth_state.dart';
@@ -76,94 +78,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.logout),
+            tooltip: 'Sign out',
             onPressed: () => context.read<AuthState>().logout(),
           ),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
         children: [
-          Text(
-            user == null ? 'Signed in' : 'Welcome, ${user.employeeFullName ?? user.email}',
-            style: const TextStyle(
-              color: AppColors.primaryGreen,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Ungated: every employee needs to reach the queries raised against
-          // them. The HR-side case list is elsewhere and stays role-gated.
-          _QuickAction(
-            icon: Icons.forum_outlined,
-            label: 'My Queries',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MyQueriesScreen()),
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Also ungated. Mobile carries the employee's half of performance —
-          // their self-assessment and the outcome. Templates, cycles, and
-          // writing reviews are administrative jobs done sitting down and stay
-          // on the web client.
-          _QuickAction(
-            icon: Icons.trending_up_outlined,
-            label: 'My Appraisals',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MyAppraisalsScreen()),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _QuickAction(
-            icon: Icons.flag_outlined,
-            label: 'My Goals',
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MyGoalsScreen()),
-            ),
-          ),
-          if (isManager) ...[
-            const SizedBox(height: 12),
-            // Role-gated to match the backend: the directory and every record it
-            // opens need employee:read, which EMPLOYEE deliberately does not hold
-            // (see RoleSeeder). Ungated, this offered every employee a tap-path
-            // into colleagues' contact details, bank accounts, and documents.
-            _QuickAction(
-              icon: Icons.people_outline,
-              label: 'Employee Directory',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const DirectoryScreen()),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _QuickAction(
-              icon: Icons.payments_outlined,
-              label: 'Payroll Cycles',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const PayrollCyclesScreen()),
-              ),
-            ),
-          ],
-          if (isOrgAdmin) ...[
-            const SizedBox(height: 12),
-            _QuickAction(
-              icon: Icons.card_membership_outlined,
-              label: 'Subscription',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
-              ),
-            ),
-          ],
+          _Greeting(user: user),
           if (_kpiFuture != null) ...[
-            const SizedBox(height: 24),
-            const Text(
-              'Overview',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.primaryGreen,
-              ),
-            ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 22),
             FutureBuilder<_HomeKpis>(
               future: _kpiFuture,
               builder: (context, snapshot) {
@@ -174,9 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }
                 if (snapshot.hasError) {
-                  return const Text(
+                  return Text(
                     "Overview isn't available right now.",
-                    style: TextStyle(color: AppColors.textMuted),
+                    style: Theme.of(context).textTheme.bodySmall,
                   );
                 }
                 final kpis = snapshot.data!;
@@ -184,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Expanded(
                       child: _KpiTile(
+                        icon: Icons.groups_outlined,
                         label: 'Headcount',
                         value: '${kpis.headcount}',
                       ),
@@ -191,7 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _KpiTile(
-                        label: "Today's attendance",
+                        icon: Icons.how_to_reg_outlined,
+                        label: 'In today',
                         value: '${kpis.attendanceRatePercent.toStringAsFixed(0)}%',
                       ),
                     ),
@@ -200,8 +127,75 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ],
-          if (_birthdaysFuture != null) ...[
-            const SizedBox(height: 24),
+          const SizedBox(height: 28),
+          const _SectionHeading('Your workspace'),
+          const SizedBox(height: 12),
+          // A grid rather than a stack of full-width rows. Six identical bars
+          // gave every destination the same weight and read as a settings menu;
+          // paired tiles are scannable at a glance and leave vertical room for
+          // the sections that actually carry information.
+          _QuickActionGrid(
+            actions: [
+              // Ungated: every employee needs to reach the queries raised
+              // against them. The HR-side case list is elsewhere and stays
+              // role-gated.
+              _QuickAction(
+                icon: Icons.forum_outlined,
+                label: 'My Queries',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const MyQueriesScreen()),
+                ),
+              ),
+              // Also ungated. Mobile carries the employee's half of performance
+              // — their self-assessment and the outcome. Templates, cycles, and
+              // writing reviews are administrative jobs done sitting down and
+              // stay on the web client.
+              _QuickAction(
+                icon: Icons.trending_up_outlined,
+                label: 'My Appraisals',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const MyAppraisalsScreen()),
+                ),
+              ),
+              _QuickAction(
+                icon: Icons.flag_outlined,
+                label: 'My Goals',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const MyGoalsScreen()),
+                ),
+              ),
+              if (isManager) ...[
+                // Role-gated to match the backend: the directory and every
+                // record it opens need employee:read, which EMPLOYEE
+                // deliberately does not hold (see RoleSeeder). Ungated, this
+                // offered every employee a tap-path into colleagues' contact
+                // details, bank accounts, and documents.
+                _QuickAction(
+                  icon: Icons.people_outline,
+                  label: 'Directory',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const DirectoryScreen()),
+                  ),
+                ),
+                _QuickAction(
+                  icon: Icons.payments_outlined,
+                  label: 'Payroll Cycles',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const PayrollCyclesScreen()),
+                  ),
+                ),
+              ],
+              if (isOrgAdmin)
+                _QuickAction(
+                  icon: Icons.card_membership_outlined,
+                  label: 'Subscription',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+                  ),
+                ),
+            ],
+          ),
+          if (_birthdaysFuture != null)
             FutureBuilder<List<UpcomingBirthdayResponse>>(
               future: _birthdaysFuture,
               builder: (context, snapshot) {
@@ -213,26 +207,211 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (birthdays == null || birthdays.isEmpty) {
                   return const SizedBox.shrink();
                 }
+                final shown = birthdays.take(5).toList();
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Birthdays',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primaryGreen,
+                    const SizedBox(height: 28),
+                    const _SectionHeading('Birthdays'),
+                    const SizedBox(height: 12),
+                    _Panel(
+                      child: Column(
+                        children: [
+                          for (var i = 0; i < shown.length; i++)
+                            _BirthdayRow(
+                              birthday: shown[i],
+                              isLast: i == shown.length - 1,
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    for (final birthday in birthdays.take(5))
-                      _BirthdayRow(birthday: birthday),
                   ],
                 );
               },
             ),
-          ],
         ],
+      ),
+    );
+  }
+}
+
+/// Greeting block: time of day as a letterspaced eyebrow, the person's name
+/// below it in the display serif.
+///
+/// This is the one place on the screen that gets to be typographic, and that is
+/// what makes it read as the top of a page rather than as the first row of a
+/// list.
+class _Greeting extends StatelessWidget {
+  const _Greeting({required this.user});
+
+  final MeResponse? user;
+
+  @override
+  Widget build(BuildContext context) {
+    final hour = DateTime.now().hour;
+    final partOfDay = hour < 12
+        ? 'Good morning'
+        : hour < 18
+            ? 'Good afternoon'
+            : 'Good evening';
+
+    // First name only. The full legal name is the wrong register for a
+    // greeting, and it is the part most likely to wrap on a narrow phone.
+    final fullName = user?.employeeFullName;
+    final name = (fullName == null || fullName.trim().isEmpty)
+        ? user?.email
+        : fullName.trim().split(RegExp(r'\s+')).first;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          partOfDay.toUpperCase(),
+          style: AppTypography.eyebrow(context.palette.textMuted),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          name ?? 'Welcome back',
+          style: Theme.of(context).textTheme.headlineMedium,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+}
+
+/// Small-caps section label. The letterspaced sans is the counterweight to the
+/// serif above it — a second bold serif heading would compete with the greeting
+/// rather than rank below it.
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label.toUpperCase(),
+      style: AppTypography.eyebrow(context.palette.textMuted),
+    );
+  }
+}
+
+/// Card surface at the app's resting elevation, for anything that is a group of
+/// rows rather than a single control.
+class _Panel extends StatelessWidget {
+  const _Panel({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: palette.surface,
+        borderRadius: AppRadius.lgAll,
+        border: Border.all(color: palette.border),
+        boxShadow: palette.elevation1,
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Two-column grid of destination tiles.
+///
+/// Hand-laid as rows rather than a `GridView` so the whole thing measures its
+/// own height inside the parent `ListView` — a nested scrollable here would
+/// either fight the outer scroll or need a hardcoded extent that breaks as
+/// role-gating changes how many tiles there are.
+class _QuickActionGrid extends StatelessWidget {
+  const _QuickActionGrid({required this.actions});
+
+  final List<Widget> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    for (var i = 0; i < actions.length; i += 2) {
+      final left = actions[i];
+      final right = i + 1 < actions.length ? actions[i + 1] : null;
+      rows.add(
+        Padding(
+          padding: EdgeInsets.only(bottom: i + 2 < actions.length ? 12 : 0),
+          child: IntrinsicHeight(
+            // Both tiles take the height of the taller one, so a label that
+            // wraps to two lines doesn't leave its neighbour short. The Row
+            // needs a bounded height for `stretch`, which inside a ListView it
+            // otherwise does not have.
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: left),
+                const SizedBox(width: 12),
+                // An odd tile keeps its column width instead of stretching, so
+                // the grid stays a grid on the last row.
+                Expanded(child: right ?? const SizedBox.shrink()),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    return Column(children: rows);
+  }
+}
+
+/// One destination tile: a tinted icon plate over a label.
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({required this.icon, required this.label, required this.onTap});
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    // The outline lives on the Material's own shape rather than on a nested
+    // Ink or Container, so the tap ripple is clipped by the same rounded
+    // rectangle that draws the border.
+    return Material(
+      color: palette.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.lgAll,
+        side: BorderSide(color: palette.border),
+      ),
+      child: InkWell(
+        borderRadius: AppRadius.lgAll,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: palette.primarySoft,
+                  borderRadius: AppRadius.smAll,
+                ),
+                child: Icon(icon, color: palette.primary, size: 20),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.titleSmall,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -241,20 +420,32 @@ class _HomeScreenState extends State<HomeScreen> {
 /// One upcoming birthday. No age and no year — the backend does not send the
 /// year of birth, which is deliberate.
 class _BirthdayRow extends StatelessWidget {
-  const _BirthdayRow({required this.birthday});
+  const _BirthdayRow({required this.birthday, required this.isLast});
 
   final UpcomingBirthdayResponse birthday;
 
+  /// The last row drops its divider, so the panel doesn't end on a stray rule.
+  final bool isLast;
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+    final palette = context.palette;
+    final theme = Theme.of(context);
+    final isToday = birthday.daysUntil == 0;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: isLast
+          ? null
+          : BoxDecoration(
+              border: Border(bottom: BorderSide(color: palette.border)),
+            ),
       child: Row(
         children: [
           EmployeeAvatar(
             photoUrl: birthday.photoUrl,
             initials: _initials(birthday.fullName),
-            radius: 16,
+            radius: 18,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -264,13 +455,13 @@ class _BirthdayRow extends StatelessWidget {
                 Text(
                   birthday.fullName,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: theme.textTheme.titleSmall,
                 ),
                 if (birthday.departmentName != null)
                   Text(
                     birthday.departmentName!,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    style: theme.textTheme.bodySmall,
                   ),
               ],
             ),
@@ -281,19 +472,20 @@ class _BirthdayRow extends StatelessWidget {
             children: [
               Text(
                 _dayAndMonth(birthday.nextBirthday),
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontFeatures: const [AppTypography.tabularFigures],
+                ),
               ),
+              const SizedBox(height: 2),
               Text(
                 switch (birthday.daysUntil) {
                   0 => 'Today',
                   1 => 'Tomorrow',
                   final days => 'in $days days',
                 },
-                style: TextStyle(
-                  color: birthday.daysUntil == 0
-                      ? AppColors.accentOrange
-                      : AppColors.textMuted,
-                  fontSize: 11,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: isToday ? palette.accentInk : palette.textMuted,
+                  fontWeight: isToday ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
             ],
@@ -338,7 +530,7 @@ class _OrgBrandingTitle extends StatelessWidget {
           child: Text(
             name,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
       ],
@@ -360,70 +552,43 @@ class _HomeKpis {
   final double attendanceRatePercent;
 }
 
+/// A single figure with its label. The figure is set in the display serif and
+/// in tabular figures, so a column of these doesn't jitter as numbers refresh.
 class _KpiTile extends StatelessWidget {
-  const _KpiTile({required this.label, required this.value});
+  const _KpiTile({required this.icon, required this.label, required this.value});
 
+  final IconData icon;
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(14),
+        color: palette.surface,
+        borderRadius: AppRadius.lgAll,
+        border: Border.all(color: palette.border),
+        boxShadow: palette.elevation1,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Icon(icon, size: 18, color: palette.textMuted),
+          const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: AppColors.primaryGreen,
-            ),
+            style: AppTypography.display(
+              size: 28,
+              weight: FontWeight.w600,
+              color: palette.textHeading,
+            ).copyWith(fontFeatures: const [AppTypography.tabularFigures]),
           ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          const SizedBox(height: 2),
+          Text(label.toUpperCase(), style: AppTypography.eyebrow(palette.textMuted)),
         ],
-      ),
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({required this.icon, required this.label, required this.onTap});
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.inputFill,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Icon(icon, color: AppColors.primaryGreen),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  label,
-                  style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
-                ),
-              ),
-              const Icon(Icons.chevron_right, color: AppColors.textMuted),
-            ],
-          ),
-        ),
       ),
     );
   }

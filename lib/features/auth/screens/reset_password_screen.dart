@@ -117,7 +117,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           autocorrect: false,
           maxLines: 2,
           minLines: 1,
-          style: const TextStyle(color: AppColors.primaryGreen, fontSize: 13),
+          style: TextStyle(color: context.palette.primary, fontSize: 13),
           decoration: const InputDecoration(hintText: 'Reset link or code'),
         ),
         const SizedBox(height: 14),
@@ -125,7 +125,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           controller: _passwordController,
           obscureText: _obscurePassword,
           autocorrect: false,
-          style: const TextStyle(color: AppColors.primaryGreen),
+          style: TextStyle(color: context.palette.primary),
           decoration: InputDecoration(
             hintText: 'New password',
             suffixIcon: IconButton(
@@ -133,7 +133,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 _obscurePassword
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined,
-                color: AppColors.textMuted,
+                color: context.palette.textMuted,
                 size: 20,
               ),
               onPressed: () {
@@ -149,7 +149,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           autocorrect: false,
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => _submitting ? null : _submit(),
-          style: const TextStyle(color: AppColors.primaryGreen),
+          style: TextStyle(color: context.palette.primary),
           decoration: const InputDecoration(hintText: 'Confirm new password'),
         ),
         const SizedBox(height: 16),
@@ -198,14 +198,14 @@ class _PasswordRequirements extends StatelessWidget {
               Icon(
                 met ? Icons.check_circle : Icons.circle_outlined,
                 size: 16,
-                color: met ? AppColors.primaryGreen : AppColors.textMuted,
+                color: met ? context.palette.primary : context.palette.textMuted,
               ),
               const SizedBox(width: 8),
               Text(
                 rule.label,
                 style: TextStyle(
                   fontSize: 13,
-                  color: met ? AppColors.primaryGreen : AppColors.textMuted,
+                  color: met ? context.palette.primary : context.palette.textMuted,
                 ),
               ),
             ],

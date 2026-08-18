@@ -99,7 +99,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
                   _rejected ?? 'Point your camera at the QR code posted at your branch.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: _rejected == null ? Colors.white : AppColors.accentOrange,
+                    color: _rejected == null ? Colors.white : context.palette.danger,
                     fontSize: 13,
                   ),
                 ),

@@ -88,12 +88,12 @@ class _AttachmentButtonState extends State<AttachmentButton> {
                 child: const CircularProgressIndicator(strokeWidth: 2),
               )
             else
-              Icon(Icons.attach_file, size: iconSize, color: AppColors.primaryGreen),
+              Icon(Icons.attach_file, size: iconSize, color: context.palette.primary),
             const SizedBox(width: 4),
             Text(
               _opening ? 'Opening…' : widget.label,
               style: TextStyle(
-                color: AppColors.primaryGreen,
+                color: context.palette.primary,
                 fontSize: fontSize,
                 fontWeight: FontWeight.w600,
               ),

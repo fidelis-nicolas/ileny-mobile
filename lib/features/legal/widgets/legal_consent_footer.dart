@@ -41,26 +41,24 @@ class _LegalConsentFooterState extends State<LegalConsentFooter> {
 
   @override
   Widget build(BuildContext context) {
+    final linkStyle = _linkStyle(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Text.rich(
         TextSpan(
-          style: const TextStyle(
-            fontSize: 12,
-            height: 1.5,
-            color: AppColors.textMuted,
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(height: 1.5),
           children: [
             const TextSpan(text: 'By signing in you agree to the '),
             TextSpan(
               text: LegalDocument.termsOfService.title,
-              style: _linkStyle,
+              style: linkStyle,
               recognizer: _termsTap,
             ),
             const TextSpan(text: ' and '),
             TextSpan(
               text: LegalDocument.privacyPolicy.title,
-              style: _linkStyle,
+              style: linkStyle,
               recognizer: _privacyTap,
             ),
             const TextSpan(text: '.'),
@@ -72,9 +70,13 @@ class _LegalConsentFooterState extends State<LegalConsentFooter> {
   }
 }
 
-const _linkStyle = TextStyle(
-  color: AppColors.primaryGreen,
-  fontWeight: FontWeight.w600,
-  decoration: TextDecoration.underline,
-  decorationColor: AppColors.primaryGreen,
-);
+/// A function rather than a `const`, because the link colour has to resolve
+/// against the ambient brightness.
+TextStyle _linkStyle(BuildContext context) {
+  return TextStyle(
+    color: context.palette.primary,
+    fontWeight: FontWeight.w600,
+    decoration: TextDecoration.underline,
+    decorationColor: context.palette.primary,
+  );
+}

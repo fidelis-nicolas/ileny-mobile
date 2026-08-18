@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_shape.dart';
 
 /// The rounded brand tile at the top of every signed-out screen.
 class AuthLogoMark extends StatelessWidget {
@@ -11,19 +12,16 @@ class AuthLogoMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(size * 0.25),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryGreen.withValues(alpha: 0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        color: palette.surface,
+        borderRadius: BorderRadius.circular(size * 0.28),
+        border: Border.all(color: palette.border),
+        boxShadow: palette.elevation2,
       ),
       child: Center(
         child: SvgPicture.asset(
@@ -54,7 +52,7 @@ class AuthShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(28, 8, 28, 40),
@@ -65,35 +63,25 @@ class AuthShell extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: IconButton(
                   onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: AppColors.primaryGreen,
-                  ),
+                  icon: const Icon(Icons.arrow_back),
                   tooltip: 'Back',
                 ),
               ),
               const SizedBox(height: 12),
               const Center(child: AuthLogoMark(size: 72)),
-              const SizedBox(height: 22),
+              const SizedBox(height: 24),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.primaryGreen,
-                  letterSpacing: -0.4,
-                ),
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 10),
               Text(
                 description,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  height: 1.4,
-                  color: AppColors.textMuted,
-                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: context.palette.textMuted,
+                    ),
               ),
               const SizedBox(height: 32),
               ...children,
@@ -105,7 +93,8 @@ class AuthShell extends StatelessWidget {
   }
 }
 
-/// Inline form-level error, styled the same as the sign-in screen's.
+/// Inline form-level error, styled the same as the sign-in screen's — a tinted
+/// plate rather than loose red text.
 class AuthFormError extends StatelessWidget {
   const AuthFormError({super.key, required this.message});
 
@@ -113,12 +102,32 @@ class AuthFormError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = context.palette;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
-      child: Text(
-        message,
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: AppColors.accentOrange, fontSize: 13),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: palette.danger.withValues(alpha: 0.10),
+          borderRadius: AppRadius.mdAll,
+          border: Border.all(color: palette.danger.withValues(alpha: 0.30)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.error_outline, size: 18, color: palette.danger),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: palette.danger,
+                    ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

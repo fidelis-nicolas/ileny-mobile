@@ -73,8 +73,8 @@ class _GoalTile extends StatelessWidget {
                   children: [
                     Text(
                       goal.title,
-                      style: const TextStyle(
-                        color: AppColors.primaryGreen,
+                      style: TextStyle(
+                        color: context.palette.primary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -82,7 +82,7 @@ class _GoalTile extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         subtitleParts.join(' · '),
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                        style: TextStyle(color: context.palette.textMuted, fontSize: 12),
                       ),
                     ],
                   ],
@@ -91,7 +91,7 @@ class _GoalTile extends StatelessWidget {
               Text(
                 goalStatusLabel(goal.status),
                 style: TextStyle(
-                  color: goalStatusColour(goal.status),
+                  color: goalStatusColour(context, goal.status),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -107,18 +107,18 @@ class _GoalTile extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: goal.progressPercent / 100,
                     minHeight: 8,
-                    backgroundColor: AppColors.inputFill,
+                    backgroundColor: context.palette.surfaceAlt,
                     // Matched to the status colour so a missed goal at 90% does
                     // not read as nearly-there — the bar and the label have to
                     // tell one story, or the cheerful bar wins.
-                    valueColor: AlwaysStoppedAnimation(goalStatusColour(goal.status)),
+                    valueColor: AlwaysStoppedAnimation(goalStatusColour(context, goal.status)),
                   ),
                 ),
               ),
               const SizedBox(width: 10),
               Text(
                 '${goal.progressPercent}%',
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                style: TextStyle(color: context.palette.textMuted, fontSize: 12),
               ),
             ],
           ),
@@ -227,8 +227,8 @@ class _CheckInSheetState extends State<_CheckInSheet> {
           children: [
             Text(
               widget.goal.title,
-              style: const TextStyle(
-                color: AppColors.primaryGreen,
+              style: TextStyle(
+                color: context.palette.primary,
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
@@ -260,10 +260,10 @@ class _CheckInSheetState extends State<_CheckInSheet> {
               child: Text(_saving ? 'Recording…' : 'Record check-in'),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'EARLIER CHECK-INS',
               style: TextStyle(
-                color: AppColors.textMuted,
+                color: context.palette.textMuted,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.5,
@@ -273,7 +273,7 @@ class _CheckInSheetState extends State<_CheckInSheet> {
             if (_history == null)
               const Center(child: Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator()))
             else if (_history!.isEmpty)
-              const Text('None yet.', style: TextStyle(color: AppColors.textMuted))
+              Text('None yet.', style: TextStyle(color: context.palette.textMuted))
             else
               for (final update in _history!)
                 Padding(
@@ -287,7 +287,7 @@ class _CheckInSheetState extends State<_CheckInSheet> {
                           if (update.progressPercent != null) '${update.progressPercent}%',
                           if (update.createdByName != null) update.createdByName!,
                         ].join(' · '),
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                        style: TextStyle(color: context.palette.textMuted, fontSize: 12),
                       ),
                       if ((update.note ?? '').isNotEmpty)
                         Text(update.note!, style: const TextStyle(fontSize: 14, height: 1.4)),
@@ -295,10 +295,10 @@ class _CheckInSheetState extends State<_CheckInSheet> {
                   ),
                 ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Check-ins cannot be edited or removed — the trail of how a goal moved is the '
               'point of keeping one.',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 12),
             ),
           ],
         ),

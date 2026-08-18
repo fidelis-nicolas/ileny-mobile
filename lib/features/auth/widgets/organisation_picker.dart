@@ -50,7 +50,7 @@ class _OrganisationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.inputFill,
+      color: context.palette.surfaceAlt,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
@@ -58,31 +58,31 @@ class _OrganisationTile extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.inputBorder),
+            border: Border.all(color: context.palette.border),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.apartment_outlined,
                 size: 20,
-                color: AppColors.textMuted,
+                color: context.palette.textMuted,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   choice.tenantName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.primaryGreen,
+                    color: context.palette.primary,
                   ),
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.chevron_right,
                 size: 20,
-                color: AppColors.textMuted,
+                color: context.palette.textMuted,
               ),
             ],
           ),

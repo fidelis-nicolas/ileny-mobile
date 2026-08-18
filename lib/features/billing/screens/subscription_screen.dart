@@ -80,9 +80,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               padding: const EdgeInsets.all(20),
               children: [
                 if (subscription.lapsed)
-                  const _Banner(
+                  _Banner(
                     icon: Icons.error_outline,
-                    colour: AppColors.accentOrange,
+                    colour: context.palette.danger,
                     title: 'Your subscription has ended.',
                     body: 'Your data is all still here and still readable. Renew from '
                         'Settings → Billing on the web to start making changes again.',
@@ -90,7 +90,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 else if (subscription.isTrial == true)
                   _Banner(
                     icon: Icons.schedule,
-                    colour: AppColors.accentOrange,
+                    colour: context.palette.warning,
                     title: subscription.trialExpiresAt == null
                         ? "You're on the Free Trial."
                         : "You're on the Free Trial until "
@@ -122,33 +122,33 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 if (subscription.maxEmployees != null &&
                     subscription.employeeCount >= subscription.maxEmployees!) ...[
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     "You've reached your plan's employee limit — upgrade on the web to add more.",
-                    style: TextStyle(color: AppColors.accentOrange, fontSize: 13),
+                    style: TextStyle(color: context.palette.danger, fontSize: 13),
                   ),
                 ],
 
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Plans are changed on the web dashboard, where payment is handled — '
                   'Settings → Billing.',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                  style: TextStyle(color: context.palette.textMuted, fontSize: 12),
                 ),
 
                 const SizedBox(height: 28),
-                const Text(
+                Text(
                   'Payment history',
                   style: TextStyle(
-                    color: AppColors.primaryGreen,
+                    color: context.palette.primary,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 8),
                 if (view.payments.isEmpty)
-                  const Text(
+                  Text(
                     'No payments yet.',
-                    style: TextStyle(color: AppColors.textMuted),
+                    style: TextStyle(color: context.palette.textMuted),
                   )
                 else
                   for (final payment in view.payments) _PaymentTile(payment: payment),
@@ -218,7 +218,7 @@ class _Banner extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cream,
+        color: context.palette.surfaceAlt,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -232,7 +232,7 @@ class _Banner extends StatelessWidget {
               children: [
                 Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                Text(body, style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
+                Text(body, style: TextStyle(color: context.palette.textMuted, fontSize: 13)),
               ],
             ),
           ),
@@ -259,7 +259,7 @@ class _DetailCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.inputFill,
+        color: context.palette.surfaceAlt,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -273,7 +273,7 @@ class _DetailCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       row.label,
-                      style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                      style: TextStyle(color: context.palette.textMuted, fontSize: 13),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -281,8 +281,8 @@ class _DetailCard extends StatelessWidget {
                     child: Text(
                       row.value,
                       textAlign: TextAlign.right,
-                      style: const TextStyle(
-                        color: AppColors.primaryGreen,
+                      style: TextStyle(
+                        color: context.palette.primary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -311,7 +311,7 @@ class _PaymentTile extends StatelessWidget {
           Icon(
             failed ? Icons.error_outline : Icons.check_circle_outline,
             size: 18,
-            color: failed ? AppColors.accentOrange : AppColors.primaryGreen,
+            color: failed ? context.palette.danger : context.palette.primary,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -325,7 +325,7 @@ class _PaymentTile extends StatelessWidget {
                 Text(
                   '${_formatDate(payment.paidAt)} · '
                   '${_formatDate(payment.periodStart)} – ${_formatDate(payment.periodEnd)}',
-                  style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                  style: TextStyle(color: context.palette.textMuted, fontSize: 12),
                 ),
               ],
             ),
@@ -335,7 +335,7 @@ class _PaymentTile extends StatelessWidget {
             _money(payment.amount),
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: failed ? AppColors.textMuted : AppColors.primaryGreen,
+              color: failed ? context.palette.textMuted : context.palette.primary,
               decoration: failed ? TextDecoration.lineThrough : null,
             ),
           ),
@@ -375,7 +375,7 @@ class _ErrorView extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: context.palette.textMuted),
             ),
             const SizedBox(height: 12),
             TextButton(onPressed: onRetry, child: const Text('Try again')),

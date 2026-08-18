@@ -159,17 +159,17 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
           Center(
             child: Text(
               _employee.fullName,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primaryGreen,
+                color: context.palette.primary,
               ),
             ),
           ),
           Center(
             child: Text(
               _employee.employeeNumber,
-              style: const TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: context.palette.textMuted),
             ),
           ),
           const SizedBox(height: 24),
@@ -185,12 +185,12 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
           ),
           if (isManager) ...[
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Manager actions',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: AppColors.primaryGreen,
+                color: context.palette.primary,
               ),
             ),
             const SizedBox(height: 12),
@@ -247,12 +247,12 @@ class _InfoTile extends StatelessWidget {
         children: [
           SizedBox(
             width: 120,
-            child: Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 13)),
+            child: Text(label, style: TextStyle(color: context.palette.textMuted, fontSize: 13)),
           ),
           Expanded(
             child: Text(
               (value == null || value!.isEmpty) ? '—' : value!,
-              style: const TextStyle(color: AppColors.primaryGreen, fontSize: 14),
+              style: TextStyle(color: context.palette.primary, fontSize: 14),
             ),
           ),
         ],

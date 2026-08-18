@@ -43,7 +43,7 @@ class _MyCaseTile extends StatelessWidget {
     return ListTile(
       title: Text(
         humaniseEnum(item.category),
-        style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+        style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,12 +57,12 @@ class _MyCaseTile extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '${formatCaseDate(item.incidentDate)} · ${humaniseEnum(item.status)}',
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            style: TextStyle(color: context.palette.textMuted, fontSize: 12),
           ),
         ],
       ),
       isThreeLine: true,
-      trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
+      trailing: Icon(Icons.chevron_right, color: context.palette.textMuted),
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => MyQueryDetailScreen(caseId: item.id)),
       ),

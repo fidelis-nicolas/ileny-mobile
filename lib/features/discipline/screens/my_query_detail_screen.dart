@@ -81,8 +81,8 @@ class _MyQueryDetailScreenState extends State<MyQueryDetailScreen> {
               children: [
                 Text(
                   humaniseEnum(item.category),
-                  style: const TextStyle(
-                    color: AppColors.primaryGreen,
+                  style: TextStyle(
+                    color: context.palette.primary,
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                   ),
@@ -91,12 +91,12 @@ class _MyQueryDetailScreenState extends State<MyQueryDetailScreen> {
                 Text(
                   'Incident of ${formatCaseDate(item.incidentDate)}'
                   '${item.reportedByName.isEmpty ? '' : ', raised by ${item.reportedByName}'}',
-                  style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                  style: TextStyle(color: context.palette.textMuted, fontSize: 13),
                 ),
                 const SizedBox(height: 8),
                 Chip(
                   label: Text(humaniseEnum(item.status)),
-                  backgroundColor: AppColors.cream,
+                  backgroundColor: context.palette.surfaceAlt,
                   side: BorderSide.none,
                 ),
                 const SizedBox(height: 16),
@@ -119,7 +119,7 @@ class _MyQueryDetailScreenState extends State<MyQueryDetailScreen> {
                           if (action.notes != null && action.notes!.isNotEmpty)
                             Text(
                               action.notes!,
-                              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                              style: TextStyle(color: context.palette.textMuted, fontSize: 13),
                             ),
                           // The evidence behind the action. This screen showed
                           // no sign one existed, which is the wrong omission on
@@ -147,7 +147,7 @@ class _MyQueryDetailScreenState extends State<MyQueryDetailScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppColors.cream,
+                      color: context.palette.surfaceAlt,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(item.resolutionNotes!),
@@ -165,9 +165,9 @@ class _MyQueryDetailScreenState extends State<MyQueryDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Anything you write becomes part of the case record, alongside what was raised.',
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                  style: TextStyle(color: context.palette.textMuted, fontSize: 12),
                 ),
               ],
             ),
@@ -189,8 +189,8 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         text,
-        style: const TextStyle(
-          color: AppColors.primaryGreen,
+        style: TextStyle(
+          color: context.palette.primary,
           fontWeight: FontWeight.w700,
           fontSize: 13,
         ),
@@ -216,7 +216,7 @@ class _ErrorView extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: context.palette.textMuted),
             ),
             const SizedBox(height: 12),
             TextButton(onPressed: onRetry, child: const Text('Try again')),

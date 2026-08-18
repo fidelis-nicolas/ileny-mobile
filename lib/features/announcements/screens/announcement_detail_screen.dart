@@ -40,10 +40,10 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
             ),
           Text(
             announcement.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: AppColors.primaryGreen,
+              color: context.palette.primary,
             ),
           ),
           const SizedBox(height: 6),
@@ -52,12 +52,12 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
               if (announcement.authorName.isNotEmpty) announcement.authorName,
               if (date != null) DateFormat('MMM d, yyyy · h:mm a').format(date),
             ].join(' · '),
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            style: TextStyle(color: context.palette.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 20),
           Text(
             announcement.body,
-            style: const TextStyle(color: AppColors.primaryGreen, fontSize: 15, height: 1.5),
+            style: TextStyle(color: context.palette.primary, fontSize: 15, height: 1.5),
           ),
         ],
       ),
@@ -75,13 +75,13 @@ class _PriorityBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.accentOrange.withValues(alpha: 0.12),
+        color: context.palette.accent.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         priority,
-        style: const TextStyle(
-          color: AppColors.accentOrange,
+        style: TextStyle(
+          color: context.palette.accentInk,
           fontSize: 11,
           fontWeight: FontWeight.w700,
         ),

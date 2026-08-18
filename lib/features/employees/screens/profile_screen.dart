@@ -103,7 +103,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Text(
                         message,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: AppColors.textMuted),
+                        style: TextStyle(color: context.palette.textMuted),
                       ),
                     ),
                   ),
@@ -141,8 +141,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             bottom: -4,
                             child: Container(
                               padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: AppColors.primaryGreen,
+                              decoration: BoxDecoration(
+                                color: context.palette.primary,
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -160,17 +160,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Center(
                   child: Text(
                     employee.fullName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primaryGreen,
+                      color: context.palette.primary,
                     ),
                   ),
                 ),
                 Center(
                   child: Text(
                     employee.employeeNumber,
-                    style: const TextStyle(color: AppColors.textMuted),
+                    style: TextStyle(color: context.palette.textMuted),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -210,12 +210,12 @@ class _LegalSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        const Divider(color: AppColors.inputBorder),
-        const Padding(
+        Divider(color: context.palette.border),
+        Padding(
           padding: EdgeInsets.only(top: 12, bottom: 4),
           child: Text(
             'Legal',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: TextStyle(color: context.palette.textMuted, fontSize: 13),
           ),
         ),
         for (final document in LegalDocument.values)
@@ -223,15 +223,15 @@ class _LegalSection extends StatelessWidget {
             contentPadding: EdgeInsets.zero,
             title: Text(
               document.title,
-              style: const TextStyle(
-                color: AppColors.primaryGreen,
+              style: TextStyle(
+                color: context.palette.primary,
                 fontSize: 14,
               ),
             ),
-            trailing: const Icon(
+            trailing: Icon(
               Icons.open_in_new,
               size: 18,
-              color: AppColors.textMuted,
+              color: context.palette.textMuted,
             ),
             onTap: () => document.open(context),
           ),
@@ -257,13 +257,13 @@ class _InfoTile extends StatelessWidget {
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 13),
             ),
           ),
           Expanded(
             child: Text(
               (value == null || value!.isEmpty) ? '—' : value!,
-              style: const TextStyle(color: AppColors.primaryGreen, fontSize: 14),
+              style: TextStyle(color: context.palette.primary, fontSize: 14),
             ),
           ),
         ],

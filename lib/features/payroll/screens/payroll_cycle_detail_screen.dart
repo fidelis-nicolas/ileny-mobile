@@ -81,11 +81,11 @@ class _PayrollCycleDetailScreenState extends State<PayrollCycleDetailScreen> {
           const SizedBox(height: 12),
           Text(
             '${_cycle.employeeCount} employee(s) · ${_cycle.status}',
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: TextStyle(color: context.palette.textMuted, fontSize: 13),
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: AppColors.accentOrange, fontSize: 13)),
+            Text(_error!, style: TextStyle(color: context.palette.danger, fontSize: 13)),
           ],
           if (_cycle.status == 'OPEN') ...[
             const SizedBox(height: 20),
@@ -101,9 +101,9 @@ class _PayrollCycleDetailScreenState extends State<PayrollCycleDetailScreen> {
             ),
           ],
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Employees',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.primaryGreen),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: context.palette.primary),
           ),
           const SizedBox(height: 8),
           FutureBuilder<List<PayrollRunResponse>>(
@@ -119,11 +119,11 @@ class _PayrollCycleDetailScreenState extends State<PayrollCycleDetailScreen> {
                 final message = snapshot.error is ApiException
                     ? (snapshot.error as ApiException).message
                     : 'Could not load the preview.';
-                return Text(message, style: const TextStyle(color: AppColors.accentOrange));
+                return Text(message, style: TextStyle(color: context.palette.danger));
               }
               final runs = snapshot.data!;
               if (runs.isEmpty) {
-                return const Text('No employees in this cycle.', style: TextStyle(color: AppColors.textMuted));
+                return Text('No employees in this cycle.', style: TextStyle(color: context.palette.textMuted));
               }
               return Column(
                 children: [
@@ -132,7 +132,7 @@ class _PayrollCycleDetailScreenState extends State<PayrollCycleDetailScreen> {
                       contentPadding: EdgeInsets.zero,
                       title: Text(
                         run.employeeFullName,
-                        style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+                        style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
                       ),
                       subtitle: Text([run.employeeNumber, run.departmentName]
                           .where((s) => s != null && s.isNotEmpty)
@@ -164,7 +164,7 @@ class _AmountRow extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: emphasize ? AppColors.primaryGreen : AppColors.textMuted,
+            color: emphasize ? context.palette.primary : context.palette.textMuted,
             fontSize: emphasize ? 16 : 14,
             fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
           ),
@@ -172,7 +172,7 @@ class _AmountRow extends StatelessWidget {
         Text(
           value.toStringAsFixed(2),
           style: TextStyle(
-            color: AppColors.primaryGreen,
+            color: context.palette.primary,
             fontSize: emphasize ? 18 : 15,
             fontWeight: emphasize ? FontWeight.w800 : FontWeight.w600,
           ),

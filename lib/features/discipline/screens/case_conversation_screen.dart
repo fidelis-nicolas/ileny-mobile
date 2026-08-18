@@ -213,7 +213,7 @@ class _ResponseBubble extends StatelessWidget {
           maxWidth: MediaQuery.of(context).size.width * 0.82,
         ),
         decoration: BoxDecoration(
-          color: fromEmployee ? AppColors.cream : AppColors.inputFill,
+          color: fromEmployee ? context.palette.surfaceAlt : context.palette.surfaceAlt,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -221,8 +221,8 @@ class _ResponseBubble extends StatelessWidget {
           children: [
             Text(
               '${response.authorName ?? 'Unknown'} · ${fromEmployee ? 'Employee' : 'HR'}',
-              style: const TextStyle(
-                color: AppColors.primaryGreen,
+              style: TextStyle(
+                color: context.palette.primary,
                 fontWeight: FontWeight.w700,
                 fontSize: 12,
               ),
@@ -242,7 +242,7 @@ class _ResponseBubble extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               _timestamp(response.createdAt),
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 11),
             ),
           ],
         ),
@@ -288,8 +288,8 @@ class _Composer extends StatelessWidget {
       top: false,
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.inputFill)),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: context.palette.surfaceAlt)),
         ),
         child: Column(
           children: [
@@ -298,13 +298,13 @@ class _Composer extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
-                    const Icon(Icons.attach_file, size: 16, color: AppColors.textMuted),
+                    Icon(Icons.attach_file, size: 16, color: context.palette.textMuted),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         attachmentName!,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                        style: TextStyle(color: context.palette.textMuted, fontSize: 12),
                       ),
                     ),
                     IconButton(
@@ -378,7 +378,7 @@ class _CentredMessage extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: context.palette.textMuted),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 12),

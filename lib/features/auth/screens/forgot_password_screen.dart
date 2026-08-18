@@ -67,18 +67,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: AppColors.cream,
+          color: context.palette.surfaceAlt,
           borderRadius: BorderRadius.circular(14),
-          border: const Border(
-            left: BorderSide(color: AppColors.primaryGreen, width: 3),
+          border: Border(
+            left: BorderSide(color: context.palette.primary, width: 3),
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
+            Icon(
               Icons.check_circle_outline,
-              color: AppColors.primaryGreen,
+              color: context.palette.primary,
               size: 26,
             ),
             const SizedBox(height: 12),
@@ -87,7 +87,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               style: TextStyle(
                 fontSize: 14,
                 height: 1.4,
-                color: AppColors.primaryGreen.withValues(alpha: 0.85),
+                color: context.palette.primary.withValues(alpha: 0.85),
               ),
             ),
           ],
@@ -115,7 +115,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         textInputAction: TextInputAction.done,
         autocorrect: false,
         onSubmitted: (_) => _submitting ? null : _submit(),
-        style: const TextStyle(color: AppColors.primaryGreen),
+        style: TextStyle(color: context.palette.primary),
         decoration: const InputDecoration(hintText: 'you@company.com'),
       ),
       const SizedBox(height: 22),

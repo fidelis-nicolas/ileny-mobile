@@ -82,10 +82,10 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
               children: [
                 Text(
                   DateFormat('EEEE, MMM d, yyyy').format(_date),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primaryGreen,
+                    color: context.palette.primary,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -107,7 +107,7 @@ class _TeamAttendanceScreenState extends State<TeamAttendanceScreen> {
             SizedBox(
               height: constraints.maxHeight,
               child: Center(
-                child: Text(message, style: const TextStyle(color: AppColors.textMuted)),
+                child: Text(message, style: TextStyle(color: context.palette.textMuted)),
               ),
             ),
           ],
@@ -128,14 +128,14 @@ class _TeamAttendanceTile extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       title: Text(
         record.employeeFullName,
-        style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+        style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
         record.workHours != null
             ? '${record.workHours!.toStringAsFixed(1)}h worked'
             : 'In progress',
       ),
-      trailing: Text(record.status, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+      trailing: Text(record.status, style: TextStyle(color: context.palette.textMuted, fontSize: 12)),
     );
   }
 }

@@ -122,7 +122,7 @@ class _RequestLeaveScreenState extends State<RequestLeaveScreen> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 12),
-              Text(_error!, style: const TextStyle(color: AppColors.accentOrange, fontSize: 13)),
+              Text(_error!, style: TextStyle(color: context.palette.danger, fontSize: 13)),
             ],
             const SizedBox(height: 24),
             ElevatedButton(
@@ -157,7 +157,7 @@ class _DateField extends StatelessWidget {
         decoration: InputDecoration(labelText: label),
         child: Text(
           value ?? 'Select date',
-          style: TextStyle(color: value == null ? AppColors.textMuted : AppColors.primaryGreen),
+          style: TextStyle(color: value == null ? context.palette.textMuted : context.palette.primary),
         ),
       ),
     );

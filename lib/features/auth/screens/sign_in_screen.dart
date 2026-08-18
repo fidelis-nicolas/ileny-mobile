@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_shape.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../legal/widgets/legal_consent_footer.dart';
 import '../data/auth_models.dart';
 import '../state/auth_state.dart';
@@ -90,7 +92,7 @@ class _SignInScreenState extends State<SignInScreen> {
     final twoFactorPending = authState.twoFactorPending;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -103,15 +105,10 @@ class _SignInScreenState extends State<SignInScreen> {
                     children: [
                       const SizedBox(height: 56),
                       const AuthLogoMark(),
-                      const SizedBox(height: 20),
-                      const Text(
+                      const SizedBox(height: 22),
+                      Text(
                         'ileny',
-                        style: TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.primaryGreen,
-                          letterSpacing: -0.5,
-                        ),
+                        style: Theme.of(context).textTheme.displaySmall,
                       ),
                       const SizedBox(height: 10),
                       Padding(
@@ -123,23 +120,14 @@ class _SignInScreenState extends State<SignInScreen> {
                                   ? 'Enter the verification code sent to your email.'
                                   : 'Your people workspace, in your pocket.',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            height: 1.4,
-                            color: AppColors.textMuted,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: context.palette.textMuted,
+                              ),
                         ),
                       ),
                       const Spacer(flex: 3),
                       if (_errorMessage != null) ...[
-                        Text(
-                          _errorMessage!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: AppColors.accentOrange,
-                            fontSize: 13,
-                          ),
-                        ),
+                        _SignInError(message: _errorMessage!),
                         const SizedBox(height: 14),
                       ],
                       if (tenantChoicePending)
@@ -153,33 +141,40 @@ class _SignInScreenState extends State<SignInScreen> {
                         TextField(
                           controller: _codeController,
                           keyboardType: TextInputType.number,
-                          style: const TextStyle(color: AppColors.primaryGreen),
+                          textAlign: TextAlign.center,
+                          // A six-digit code is read back digit by digit, so
+                          // it gets the wide tracking and even widths that make
+                          // that possible.
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                letterSpacing: 8,
+                                fontFeatures: const [AppTypography.tabularFigures],
+                              ),
                           decoration: const InputDecoration(hintText: '6-digit code'),
                         )
                       else ...[
                         TextField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
-                          style: const TextStyle(color: AppColors.primaryGreen),
                           decoration: const InputDecoration(
                             hintText: 'jonas.weber@maplecrest.com',
+                            prefixIcon: Icon(Icons.alternate_email, size: 20),
                           ),
                         ),
                         const SizedBox(height: 14),
                         TextField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
-                          style: const TextStyle(color: AppColors.primaryGreen),
                           decoration: InputDecoration(
                             hintText: 'Password',
+                            prefixIcon: const Icon(Icons.lock_outline, size: 20),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: AppColors.textMuted,
                                 size: 20,
                               ),
+                              tooltip: _obscurePassword ? 'Show password' : 'Hide password',
                               onPressed: () {
                                 setState(() {
                                   _obscurePassword = !_obscurePassword;
@@ -195,12 +190,12 @@ class _SignInScreenState extends State<SignInScreen> {
                         // button here — just the in-flight indicator and a
                         // way back to the ordinary form.
                         if (_submitting)
-                          const SizedBox(
+                          SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: AppColors.primaryGreen,
+                              color: context.palette.primary,
                             ),
                           ),
                         TextButton(
@@ -217,27 +212,33 @@ class _SignInScreenState extends State<SignInScreen> {
                           onPressed:
                               _submitting ? null : () => _submit(authState),
                           child: _submitting
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.white,
+                                    // Matches the button's own foreground —
+                                    // white would vanish on the dark-mode fill.
+                                    color: context.palette.onPrimary,
                                   ),
                                 )
                               : Text(twoFactorPending ? 'Verify' : 'Sign in'),
                         ),
-                      const SizedBox(height: 14),
-                      if (!tenantChoicePending && !twoFactorPending) ...[
-                        TextButton(
-                          onPressed: () => context.push('/forgot-password'),
-                          child: const Text('Forgot password?'),
+                      const SizedBox(height: 6),
+                      if (!tenantChoicePending && !twoFactorPending)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton(
+                              onPressed: () => context.push('/forgot-password'),
+                              child: const Text('Forgot password?'),
+                            ),
+                            TextButton(
+                              onPressed: () {},
+                              child: const Text('Sign in with SSO'),
+                            ),
+                          ],
                         ),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text('Sign in with SSO'),
-                        ),
-                      ],
                       const Spacer(flex: 2),
                       const LegalConsentFooter(),
                       const SizedBox(height: 20),
@@ -248,6 +249,44 @@ class _SignInScreenState extends State<SignInScreen> {
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+/// Form-level error: a tinted plate rather than loose red text, so a failed
+/// sign-in is impossible to miss and doesn't shift the layout around it.
+class _SignInError extends StatelessWidget {
+  const _SignInError({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final palette = context.palette;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: palette.danger.withValues(alpha: 0.10),
+        borderRadius: AppRadius.mdAll,
+        border: Border.all(color: palette.danger.withValues(alpha: 0.30)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.error_outline, size: 18, color: palette.danger),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: palette.danger,
+                  ),
+            ),
+          ),
+        ],
       ),
     );
   }

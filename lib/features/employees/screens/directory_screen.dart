@@ -47,9 +47,9 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
               children: [
                 TextField(
                   controller: _searchController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Filter by name or employee number',
-                    prefixIcon: Icon(Icons.search, color: AppColors.textMuted),
+                    prefixIcon: Icon(Icons.search, color: context.palette.textMuted),
                   ),
                   onChanged: (value) => setState(() => _query = value.trim().toLowerCase()),
                 ),
@@ -101,8 +101,8 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   ),
                   title: Text(
                     employee.fullName,
-                    style: const TextStyle(
-                      color: AppColors.primaryGreen,
+                    style: TextStyle(
+                      color: context.palette.primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -113,7 +113,7 @@ class _DirectoryScreenState extends State<DirectoryScreen> {
                   ),
                   trailing: Text(
                     employee.status,
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    style: TextStyle(color: context.palette.textMuted, fontSize: 12),
                   ),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
@@ -154,12 +154,12 @@ class _StatusChip extends StatelessWidget {
       label: Text(label),
       selected: selected,
       onSelected: (_) => onSelected(),
-      selectedColor: AppColors.primaryGreen,
+      selectedColor: context.palette.primary,
       labelStyle: TextStyle(
-        color: selected ? Colors.white : AppColors.primaryGreen,
+        color: selected ? Colors.white : context.palette.primary,
         fontSize: 12,
       ),
-      backgroundColor: AppColors.inputFill,
+      backgroundColor: context.palette.surfaceAlt,
       side: BorderSide.none,
     );
   }

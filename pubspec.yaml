@@ -37,6 +37,14 @@ dependencies:
 
   # SVG rendering for the ileny logo mark.
   flutter_svg: ^2.2.1
+
+  # Fraunces (display) and Inter (UI) — the same pairing the web client sets in
+  # src/styles/globals.css, so the two clients read as one product. Fetched on
+  # first use and cached to disk; every text style falls back to the platform
+  # font if that fetch fails, so a cold offline start degrades rather than
+  # breaks. The web ships these as .woff2, which Flutter cannot load, hence the
+  # package rather than bundled asset files.
+  google_fonts: ^6.3.3
   dio: ^5.10.0
   cookie_jar: ^4.0.9
   dio_cookie_manager: ^3.4.0

@@ -23,13 +23,13 @@ class PayslipsScreen extends StatelessWidget {
         itemBuilder: (context, payslip) {
           final period = DateFormat('MMMM yyyy').format(DateTime(payslip.year, payslip.month));
           return ListTile(
-            leading: const Icon(Icons.receipt_long_outlined, color: AppColors.primaryGreen),
+            leading: Icon(Icons.receipt_long_outlined, color: context.palette.primary),
             title: Text(
               period,
-              style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+              style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
             ),
             subtitle: Text('Net pay: ${payslip.netSalary.toStringAsFixed(2)}'),
-            trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
+            trailing: Icon(Icons.chevron_right, color: context.palette.textMuted),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(

@@ -68,11 +68,11 @@ class _PayslipDetailScreenState extends State<PayslipDetailScreen> {
           if (generatedAt != null)
             Text(
               'Generated ${DateFormat('MMM d, yyyy').format(generatedAt)}',
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 12),
             ),
           const SizedBox(height: 32),
           if (_error != null) ...[
-            Text(_error!, style: const TextStyle(color: AppColors.accentOrange, fontSize: 13)),
+            Text(_error!, style: TextStyle(color: context.palette.danger, fontSize: 13)),
             const SizedBox(height: 12),
           ],
           ElevatedButton.icon(
@@ -107,7 +107,7 @@ class _AmountRow extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: emphasize ? AppColors.primaryGreen : AppColors.textMuted,
+            color: emphasize ? context.palette.primary : context.palette.textMuted,
             fontSize: emphasize ? 16 : 14,
             fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
           ),
@@ -115,7 +115,7 @@ class _AmountRow extends StatelessWidget {
         Text(
           value.toStringAsFixed(2),
           style: TextStyle(
-            color: AppColors.primaryGreen,
+            color: context.palette.primary,
             fontSize: emphasize ? 18 : 15,
             fontWeight: emphasize ? FontWeight.w800 : FontWeight.w600,
           ),

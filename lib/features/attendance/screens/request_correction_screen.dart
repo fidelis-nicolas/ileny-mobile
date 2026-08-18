@@ -101,16 +101,16 @@ class _RequestCorrectionScreenState extends State<RequestCorrectionScreen> {
                   _date == null ? 'Select date' : dateFormat.format(_date!),
                   style: TextStyle(
                     color: _date == null
-                        ? AppColors.textMuted
-                        : AppColors.primaryGreen,
+                        ? context.palette.textMuted
+                        : context.palette.primary,
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Must be a day you already have an attendance record for.',
-              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -129,14 +129,14 @@ class _RequestCorrectionScreenState extends State<RequestCorrectionScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.cream,
+                color: context.palette.surfaceAlt,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text(
+              child: Text(
                 'This queues a note for your manager to review — it does not '
                 'change the recorded times on its own.',
                 style: TextStyle(
-                  color: AppColors.textMuted,
+                  color: context.palette.textMuted,
                   fontSize: 12,
                   height: 1.4,
                 ),
@@ -146,8 +146,8 @@ class _RequestCorrectionScreenState extends State<RequestCorrectionScreen> {
               const SizedBox(height: 12),
               Text(
                 _error!,
-                style: const TextStyle(
-                  color: AppColors.accentOrange,
+                style: TextStyle(
+                  color: context.palette.danger,
                   fontSize: 13,
                 ),
               ),

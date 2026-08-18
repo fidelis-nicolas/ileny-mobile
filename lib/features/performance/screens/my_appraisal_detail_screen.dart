@@ -139,16 +139,16 @@ class _MyAppraisalDetailScreenState extends State<MyAppraisalDetailScreen> {
         Text(
           appraisalStatusLabel(appraisal.status),
           style: TextStyle(
-            color: appraisalStatusColour(appraisal.status),
+            color: appraisalStatusColour(context, appraisal.status),
             fontWeight: FontWeight.w700,
           ),
         ),
         if (appraisal.awaitingSelfAssessment) ...[
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Rate yourself against each of these, then submit. Your reviewer sees your '
             'answers before writing theirs.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: TextStyle(color: context.palette.textMuted, fontSize: 13),
           ),
         ],
 
@@ -186,7 +186,7 @@ class _MyAppraisalDetailScreenState extends State<MyAppraisalDetailScreen> {
                 ? 'All rated. Submitting sends this to your reviewer and you cannot change it '
                     'afterwards.'
                 : '$_unanswered ${_unanswered == 1 ? 'criterion' : 'criteria'} left to rate.',
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: TextStyle(color: context.palette.textMuted, fontSize: 13),
           ),
           const SizedBox(height: 12),
           Row(
@@ -244,10 +244,10 @@ class _MyAppraisalDetailScreenState extends State<MyAppraisalDetailScreen> {
           const SizedBox(height: 8),
           // Said plainly because people assume otherwise, and an acknowledgement
           // someone thought was an agreement is worth nothing to either side.
-          const Text(
+          Text(
             'Acknowledging records that you have read this. It does not mean you agree with it. '
             'Your response is kept on the appraisal and cannot be edited afterwards.',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            style: TextStyle(color: context.palette.textMuted, fontSize: 13),
           ),
           const SizedBox(height: 12),
           FilledButton(
@@ -287,7 +287,7 @@ class _OutcomeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cream,
+        color: context.palette.surfaceAlt,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -307,8 +307,8 @@ class _OutcomeCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               appraisal.ratingBand!,
-              style: const TextStyle(
-                color: AppColors.primaryGreen,
+              style: TextStyle(
+                color: context.palette.primary,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -325,7 +325,7 @@ class _OutcomeCard extends StatelessWidget {
             Text(
               'Reviewed ${formatPerformanceDate(appraisal.reviewerSubmittedAt!)}'
               '${appraisal.reviewedByName != null ? ' by ${appraisal.reviewedByName}' : ''}',
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 12),
             ),
           ],
         ],
@@ -348,8 +348,8 @@ class _Figure extends StatelessWidget {
       children: [
         Text(
           label.toUpperCase(),
-          style: const TextStyle(
-            color: AppColors.textMuted,
+          style: TextStyle(
+            color: context.palette.textMuted,
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -359,7 +359,7 @@ class _Figure extends StatelessWidget {
         Text(
           value == null ? '—' : '${value!.toStringAsFixed(0)}%',
           style: TextStyle(
-            color: muted ? AppColors.textMuted : AppColors.primaryGreen,
+            color: muted ? context.palette.textMuted : context.palette.primary,
             fontSize: 28,
             fontWeight: FontWeight.w700,
           ),
@@ -392,7 +392,7 @@ class _CriterionCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.inputBorder),
+        border: Border.all(color: context.palette.border),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -404,8 +404,8 @@ class _CriterionCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   criterion.label,
-                  style: const TextStyle(
-                    color: AppColors.primaryGreen,
+                  style: TextStyle(
+                    color: context.palette.primary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -414,7 +414,7 @@ class _CriterionCard extends StatelessWidget {
               // deserves — a 40% criterion is not the same ask as a 5% one.
               Text(
                 '${criterion.weight.toStringAsFixed(0)}%',
-                style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                style: TextStyle(color: context.palette.textMuted, fontSize: 12),
               ),
             ],
           ),
@@ -422,7 +422,7 @@ class _CriterionCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               criterion.description!,
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 13, height: 1.4),
+              style: TextStyle(color: context.palette.textMuted, fontSize: 13, height: 1.4),
             ),
           ],
           const SizedBox(height: 12),
@@ -459,16 +459,16 @@ class _CriterionCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.cream,
+                color: context.palette.surfaceAlt,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'REVIEWER',
                     style: TextStyle(
-                      color: AppColors.textMuted,
+                      color: context.palette.textMuted,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       letterSpacing: 0.5,
@@ -521,16 +521,16 @@ class _RatingChip extends StatelessWidget {
           height: 44,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? AppColors.primaryGreen : AppColors.inputFill,
+            color: selected ? context.palette.primary : context.palette.surfaceAlt,
             border: Border.all(
-              color: selected ? AppColors.primaryGreen : AppColors.inputBorder,
+              color: selected ? context.palette.primary : context.palette.border,
             ),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             '$value',
             style: TextStyle(
-              color: selected ? Colors.white : AppColors.textMuted,
+              color: selected ? Colors.white : context.palette.textMuted,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -552,7 +552,7 @@ class _QuoteBlock extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.cream,
+        color: context.palette.surfaceAlt,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -560,8 +560,8 @@ class _QuoteBlock extends StatelessWidget {
         children: [
           Text(
             label.toUpperCase(),
-            style: const TextStyle(
-              color: AppColors.textMuted,
+            style: TextStyle(
+              color: context.palette.textMuted,
               fontSize: 11,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.5,

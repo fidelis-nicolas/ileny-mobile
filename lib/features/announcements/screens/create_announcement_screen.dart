@@ -90,7 +90,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 16),
-              Text(_error!, style: const TextStyle(color: AppColors.accentOrange, fontSize: 13)),
+              Text(_error!, style: TextStyle(color: context.palette.danger, fontSize: 13)),
             ],
             const SizedBox(height: 24),
             Row(

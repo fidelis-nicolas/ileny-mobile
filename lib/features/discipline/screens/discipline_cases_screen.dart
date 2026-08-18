@@ -64,7 +64,7 @@ class _CaseTile extends StatelessWidget {
     return ExpansionTile(
       title: Text(
         humaniseEnum(item.category),
-        style: const TextStyle(color: AppColors.primaryGreen, fontWeight: FontWeight.w600),
+        style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
       ),
       subtitle: Text('${formatCaseDate(item.incidentDate)} · ${humaniseEnum(item.status)}'),
       childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -73,9 +73,9 @@ class _CaseTile extends StatelessWidget {
         Text(item.description),
         if (item.actions.isNotEmpty) ...[
           const SizedBox(height: 10),
-          const Text(
+          Text(
             'Actions',
-            style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.primaryGreen, fontSize: 13),
+            style: TextStyle(fontWeight: FontWeight.w700, color: context.palette.primary, fontSize: 13),
           ),
           for (final action in item.actions)
             Padding(
@@ -86,7 +86,7 @@ class _CaseTile extends StatelessWidget {
                   Text(
                     '${humaniseEnum(action.actionType)} · ${formatCaseDate(action.actionDate)}'
                     '${action.notes != null && action.notes!.isNotEmpty ? ' · ${action.notes}' : ''}',
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+                    style: TextStyle(color: context.palette.textMuted, fontSize: 13),
                   ),
                   // Was a 📎 glyph in the text, which announced an attachment
                   // without offering any way to read it.

@@ -51,16 +51,46 @@ class _AnnouncementsScreenState extends State<AnnouncementsScreen> {
         emptyMessage: 'No announcements yet.',
         fetchPage: (page, size) => repository.listPublished(page: page, size: size),
         itemBuilder: (context, announcement) {
+          final poll = announcement.poll;
           return ListTile(
-            leading: Icon(Icons.campaign_outlined, color: context.palette.primary),
+            leading: Icon(
+              poll == null ? Icons.campaign_outlined : Icons.bar_chart_rounded,
+              color: context.palette.primary,
+            ),
             title: Text(
               announcement.title,
               style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
             ),
-            subtitle: Text(
-              announcement.body,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  announcement.body,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                // Polls are answered on the detail screen, not from the row — a
+                // ballot inside a tappable row would swallow the tap. This just
+                // says there is something waiting, and whether it still is.
+                if (poll != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      poll.closed
+                          ? 'Poll · closed'
+                          : poll.hasVoted
+                          ? "Poll · you've voted"
+                          : poll.canVote
+                          ? 'Poll · awaiting your vote'
+                          : 'Poll · not open to you',
+                      style: TextStyle(
+                        color: context.palette.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+              ],
             ),
             onTap: () {
               Navigator.of(context).push(

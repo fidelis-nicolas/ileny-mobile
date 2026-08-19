@@ -36,10 +36,18 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     final authState = context.read<AuthState>();
-    if (authState.hasAnyPermission(kManagerPermissions)) {
+    // Headcount comes from the employee list and the rate from the daily register, and both
+    // accept the department-scoped read — so a head of department gets the same two tiles,
+    // counting their own team. The panel hides itself on error, which covers someone holding
+    // one of the two permissions but not the other.
+    if (authState.hasAnyPermission(kDirectoryPermissions)) {
       _kpiFuture = _loadKpis();
-      // `/employees/birthdays` needs `employee:read`, so this is a manager
-      // view. Employees still get their own greeting as a notification.
+    }
+    // A separate gate, because `/employees/birthdays` has no department tier and takes the
+    // tenant-wide `employee:read` alone. Under the directory gate a head of department would
+    // be shown a section whose one request comes back 403. Employees still get their own
+    // greeting as a notification.
+    if (authState.hasAnyPermission(kBirthdayPermissions)) {
       _birthdaysFuture = context.read<EmployeeRepository>().upcomingBirthdays(days: 30);
     }
   }
@@ -62,7 +70,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final authState = context.watch<AuthState>();
     final user = authState.currentUser;
-    final isManager = authState.hasAnyPermission(kManagerPermissions);
+    // One gate per destination. These were a single "isManager" check, which meant the
+    // directory and payroll stood or fell together even though they are different
+    // permissions — and a head of department, holding the first and not the second, got
+    // neither.
+    final canSeeDirectory = authState.hasAnyPermission(kDirectoryPermissions);
+    final canSeePayroll = authState.hasAnyPermission(kPayrollPermissions);
     final isOrgAdmin = authState.hasAnyPermission(kInvitePermissions);
 
     return Scaffold(
@@ -164,12 +177,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   MaterialPageRoute(builder: (_) => const MyGoalsScreen()),
                 ),
               ),
-              if (isManager) ...[
-                // Role-gated to match the backend: the directory and every
-                // record it opens need employee:read, which EMPLOYEE
-                // deliberately does not hold (see RoleSeeder). Ungated, this
-                // offered every employee a tap-path into colleagues' contact
-                // details, bank accounts, and documents.
+              // Gated to match the backend: the directory and the records it opens need
+              // employee:read or its department variant, neither of which EMPLOYEE holds
+              // (see RoleSeeder). Ungated, this offered every employee a tap-path into
+              // colleagues' contact details. A head of department gets in on the narrow
+              // one, and the backend hands them their own team.
+              if (canSeeDirectory)
                 _QuickAction(
                   icon: Icons.people_outline,
                   label: 'Directory',
@@ -177,6 +190,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const DirectoryScreen()),
                   ),
                 ),
+              // Payroll has no department tier at all — it is the one thing the HOD role was
+              // built to stay out of.
+              if (canSeePayroll)
                 _QuickAction(
                   icon: Icons.payments_outlined,
                   label: 'Payroll Cycles',
@@ -184,7 +200,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const PayrollCyclesScreen()),
                   ),
                 ),
-              ],
               if (isOrgAdmin)
                 _QuickAction(
                   icon: Icons.card_membership_outlined,

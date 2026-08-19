@@ -12,9 +12,13 @@ import 'employee_avatar.dart';
 
 const _statusOptions = ['ACTIVE', 'INACTIVE', 'TERMINATED', 'SUSPENDED'];
 
-/// Directory drill-down: read-only info for every role, plus Tier B
-/// manager/admin actions (status change, invite, discipline cases) gated
-/// per [kManagerPermissions]/[kInvitePermissions].
+/// Directory drill-down: the record itself for anyone who can reach the directory, plus
+/// manager actions gated one at a time.
+///
+/// Status change, discipline and invite are three separate permissions on the backend, so
+/// they get three separate checks here rather than one for the section. A head of department
+/// holds the discipline one and neither of the others — under a single check they either saw
+/// all three and got a 403 from two, or saw none and lost the one they could use.
 class EmployeeDetailScreen extends StatefulWidget {
   const EmployeeDetailScreen({super.key, required this.employee});
 
@@ -140,8 +144,16 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthState>();
-    final isManager = authState.hasAnyPermission(kManagerPermissions);
-    final canInvite = authState.hasAnyPermission(kInvitePermissions);
+    // One gate per action rather than one for the whole section. These are three different
+    // permissions on the backend, and a head of department holds the discipline one without
+    // the other two — under a single check they either saw all three and got a 403 from two,
+    // or saw none and lost the one they could use.
+    final canChangeStatus = authState.hasAnyPermission(kEmployeeUpdatePermissions);
+    final canSeeDiscipline = authState.hasAnyPermission(kDisciplinePermissions);
+    final canInvite = authState.hasAnyPermission(kInvitePermissions) &&
+        !_employee.hasLoginAccount &&
+        !_invited;
+    final showActions = canChangeStatus || canSeeDiscipline || canInvite;
 
     return Scaffold(
       appBar: AppBar(title: Text(_employee.fullName)),
@@ -183,7 +195,7 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
             label: 'Login account',
             value: _employee.hasLoginAccount || _invited ? 'Yes' : 'No',
           ),
-          if (isManager) ...[
+          if (showActions) ...[
             const SizedBox(height: 24),
             Text(
               'Manager actions',
@@ -194,24 +206,27 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _busy ? null : _changeStatus,
-              icon: const Icon(Icons.toggle_on_outlined),
-              label: const Text('Change status'),
-            ),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: _busy
-                  ? null
-                  : () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => DisciplineCasesScreen(employee: _employee),
+            if (canChangeStatus)
+              OutlinedButton.icon(
+                onPressed: _busy ? null : _changeStatus,
+                icon: const Icon(Icons.toggle_on_outlined),
+                label: const Text('Change status'),
+              ),
+            if (canSeeDiscipline) ...[
+              if (canChangeStatus) const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: _busy
+                    ? null
+                    : () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => DisciplineCasesScreen(employee: _employee),
+                          ),
                         ),
-                      ),
-              icon: const Icon(Icons.gavel_outlined),
-              label: const Text('Discipline cases'),
-            ),
-            if (canInvite && !_employee.hasLoginAccount && !_invited) ...[
+                icon: const Icon(Icons.gavel_outlined),
+                label: const Text('Discipline cases'),
+              ),
+            ],
+            if (canInvite) ...[
               const SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: _busy ? null : _invite,

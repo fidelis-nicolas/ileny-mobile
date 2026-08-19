@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/announcement_models.dart';
 import '../data/announcement_repository.dart';
+import '../widgets/poll_card.dart';
 
 class AnnouncementDetailScreen extends StatefulWidget {
   const AnnouncementDetailScreen({super.key, required this.announcement});
@@ -59,6 +60,11 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
             announcement.body,
             style: TextStyle(color: context.palette.primary, fontSize: 15, height: 1.5),
           ),
+          // Below the body, which is the context the question is asked in.
+          if (announcement.poll != null) ...[
+            const SizedBox(height: 20),
+            PollCard(announcementId: announcement.id, poll: announcement.poll!),
+          ],
         ],
       ),
     );

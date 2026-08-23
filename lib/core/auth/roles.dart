@@ -1,14 +1,23 @@
 /// Shared permission sets for gating manager/admin screens.
 ///
-/// These replaced role-name sets once tenants could edit what a role may do. An organisation
-/// can grant its HOD `payroll:read`, take `leave:approve:dept` away, or invent a role of its
-/// own, so `HOD` no longer tells you what its holder can reach — only a permission does. The
-/// strings here are exactly what the backend's `@PreAuthorize` compares against, so what the
-/// app offers and what the server allows cannot drift.
+/// These replaced the role-name sets this file used to hold. The strings are exactly what the
+/// backend's `@PreAuthorize` compares against, so what the app offers and what the server allows
+/// cannot drift; gating on `HOD` instead would keep a second copy of the role-to-permission
+/// mapping here, where nothing catches it going stale.
+///
+/// The ladder itself is fixed and set by the backend's `RoleSeeder`: SUPER_ADMIN, ORG_ADMIN and
+/// HR_MANAGER act on the organisation, HOD acts on their own department and holds no tenant-wide
+/// permission at all, EMPLOYEE acts on themselves. Everyone on it is also a member of staff —
+/// an HOD clocks in and requests leave through the same grants an employee has.
 ///
 /// Each set is an OR: hold any one of them and the screen is offered. That matches the
 /// endpoints, several of which accept either the organisation-wide permission or its `:dept`
 /// variant.
+///
+/// Note what has no set here: **attendance correction**. Recording an entry or approving a
+/// correction takes the tenant-wide `attendance:update` / `attendance:approve`, which only HR
+/// and the administrator roles hold. This app never calls either — it submits a correction
+/// against the caller's own record, which every employee may do.
 library;
 
 /// The staff directory and the records it opens.
@@ -45,9 +54,9 @@ const kDisciplinePermissions = {'discipline:read', 'discipline:read:dept'};
 
 /// Raising a case, as opposed to reading one.
 ///
-/// A separate grant from [kDisciplinePermissions] now that a tenant can set the two
-/// independently: a head of department may be given the read to follow their team's cases
-/// without the create to open them, and an ungated button would 403 on tap.
+/// A separate grant from [kDisciplinePermissions], because the backend splits reading a case
+/// from opening one: an account may hold the read to follow their team's cases without the
+/// create, and an ungated button would 403 on tap.
 const kDisciplineCreatePermissions = {'discipline:create', 'discipline:create:dept'};
 
 /// The attendance register.

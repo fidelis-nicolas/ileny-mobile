@@ -118,8 +118,15 @@ class AttendanceRepository {
   /// client limitation: it raises a note against an *existing* record (a date
   /// with no record at all 404s with "No attendance record found for that
   /// date"), and it proposes no times — approval records that the employee's
-  /// account of the day was accepted, and a manager still has to overwrite the
-  /// record separately for hours and pay to change.
+  /// account of the day was accepted, and the register still has to be
+  /// overwritten separately for hours and pay to change.
+  ///
+  /// Whoever does that overwriting is HR, at every scope: approving a correction
+  /// and writing the corrected entry take the tenant-wide `attendance:approve`
+  /// and `attendance:update`, neither of which has a `:dept` form and neither of
+  /// which a head of department holds. This app calls neither — submitting is
+  /// `attendance:create`, which every employee has, so a head of department
+  /// files a correction here exactly as their staff do.
   Future<AttendanceCorrection> submitCorrection({
     required String date,
     required String reason,

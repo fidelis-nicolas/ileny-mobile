@@ -76,7 +76,10 @@ class _HomeScreenState extends State<HomeScreen> {
     // neither.
     final canSeeDirectory = authState.hasAnyPermission(kDirectoryPermissions);
     final canSeePayroll = authState.hasAnyPermission(kPayrollPermissions);
-    final isOrgAdmin = authState.hasAnyPermission(kInvitePermissions);
+    // Named for the capability rather than the role that usually carries it: this is
+    // `user:create`. Reading it as "is an org admin" is how a permission check quietly
+    // turns back into a role check.
+    final canInvite = authState.hasAnyPermission(kInvitePermissions);
 
     return Scaffold(
       appBar: AppBar(
@@ -200,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const PayrollCyclesScreen()),
                   ),
                 ),
-              if (isOrgAdmin)
+              if (canInvite)
                 _QuickAction(
                   icon: Icons.card_membership_outlined,
                   label: 'Subscription',

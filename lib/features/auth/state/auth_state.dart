@@ -36,22 +36,18 @@ class AuthState extends ChangeNotifier {
 
   /// True when the account holds at least one of [required].
   ///
-  /// **Prefer this to [hasAnyRole].** A tenant can change what its HOD or any custom role
-  /// may do, so a role name no longer implies a fixed set of abilities: gating on the name
-  /// offers screens the server refuses and hides ones it would allow. These strings are the
-  /// same ones the backend's @PreAuthorize compares against, so the two cannot drift.
+  /// **The one way to gate a screen.** These strings are the same ones the backend's
+  /// @PreAuthorize compares against, so the two cannot drift; a role name would restate the
+  /// backend's role-to-permission mapping here, where nothing catches it going stale.
+  ///
+  /// There was a `hasAnyRole` beside this, offering a second and worse answer to the same
+  /// question. Nothing called it, so it is gone — [roleNames] remains, for display.
   ///
   /// Any rather than all, because the endpoints behind a screen are often an `or` — the
   /// attendance register takes `attendance:read` or `attendance:read:dept`, and requiring
   /// both would hide it from the head of department the narrow one exists for.
   bool hasAnyPermission(Iterable<String> required) =>
       required.any(permissions.contains);
-
-  /// True when the account is on any of [roles].
-  ///
-  /// Only for the few checks that are genuinely about identity rather than capability —
-  /// reach for [hasAnyPermission] otherwise.
-  bool hasAnyRole(Iterable<String> roles) => roles.any(roleNames.contains);
 
   Future<void> bootstrap() async {
     final me = await _authRepository.restoreSession();

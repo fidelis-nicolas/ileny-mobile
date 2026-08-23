@@ -116,8 +116,9 @@ class MeResponse {
   /// Every permission the account holds, flattened across its roles — the same set
   /// the backend's @PreAuthorize checks.
   ///
-  /// Gate on this rather than on [roleNames]. A tenant can change what its HOD or any
-  /// custom role may do, so a role name no longer implies a fixed set of abilities.
+  /// Gate on this rather than on [roleNames]. These are the very strings the server compares,
+  /// so a check written against them cannot disagree with the one that actually decides;
+  /// gating on a role name restates the backend's mapping here, where it drifts unnoticed.
   final List<String> permissions;
   final String? employeeId;
   final String? employeeFullName;

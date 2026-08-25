@@ -12,6 +12,7 @@ import '../../auth/data/auth_models.dart';
 import '../../auth/state/auth_state.dart';
 import '../../billing/screens/subscription_screen.dart';
 import '../../discipline/screens/my_queries_screen.dart';
+import '../../documents/screens/my_documents_screen.dart';
 import '../../employees/data/employee_models.dart';
 import '../../employees/data/employee_repository.dart';
 import '../../employees/screens/directory_screen.dart';
@@ -20,6 +21,7 @@ import '../../employees/screens/profile_screen.dart';
 import '../../payroll/screens/payroll_cycles_screen.dart';
 import '../../performance/screens/my_appraisals_screen.dart';
 import '../../performance/screens/my_goals_screen.dart';
+import '../../whistleblow/screens/raise_report_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -178,6 +180,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 label: 'My Goals',
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const MyGoalsScreen()),
+                ),
+              ),
+              // Ungated, and the reason this half of the documents feature is on the phone at
+              // all: only HR could upload against a staff record before, so the person who
+              // actually holds the certificate had no way to put it in. Here they photograph it.
+              _QuickAction(
+                icon: Icons.folder_outlined,
+                label: 'My Documents',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const MyDocumentsScreen()),
+                ),
+              ),
+              // Also ungated, and deliberately so — gating the ability to raise a concern would
+              // defeat the feature, since the person who most needs this channel is the one with
+              // the least authority. The handler queue is not here: investigating a report is a
+              // sit-down job and stays on the web client, the same split performance makes.
+              _QuickAction(
+                icon: Icons.privacy_tip_outlined,
+                label: 'Raise a Concern',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const RaiseReportScreen()),
                 ),
               ),
               // Gated to match the backend: the directory and the records it opens need

@@ -19,6 +19,7 @@ import 'features/auth/data/auth_repository.dart';
 import 'features/auth/state/auth_state.dart';
 import 'features/billing/data/subscription_repository.dart';
 import 'features/discipline/data/discipline_repository.dart';
+import 'features/documents/data/document_repository.dart';
 import 'features/employees/data/employee_repository.dart';
 import 'features/leave/data/leave_repository.dart';
 import 'features/notifications/data/notification_repository.dart';
@@ -26,6 +27,7 @@ import 'features/payroll/data/payroll_repository.dart';
 import 'features/performance/data/performance_repository.dart';
 import 'features/payslips/data/payslip_repository.dart';
 import 'features/notifications/state/notifications_state.dart';
+import 'features/whistleblow/data/whistleblow_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +65,8 @@ void main() async {
   final performanceRepository = PerformanceRepository(dioClient: dioClient);
   final payrollRepository = PayrollRepository(dioClient: dioClient);
   final subscriptionRepository = SubscriptionRepository(dioClient: dioClient);
+  final documentRepository = DocumentRepository(dioClient: dioClient);
+  final whistleblowRepository = WhistleblowRepository(dioClient: dioClient);
   final notificationsState = NotificationsState(repository: notificationRepository);
   final pushNotificationService = PushNotificationService(
     notificationRepository: notificationRepository,
@@ -97,6 +101,8 @@ void main() async {
     performanceRepository: performanceRepository,
     payrollRepository: payrollRepository,
     subscriptionRepository: subscriptionRepository,
+    documentRepository: documentRepository,
+    whistleblowRepository: whistleblowRepository,
     tokenStorage: tokenStorage,
     router: router,
   ));
@@ -118,6 +124,8 @@ class MyApp extends StatelessWidget {
     required this.performanceRepository,
     required this.payrollRepository,
     required this.subscriptionRepository,
+    required this.documentRepository,
+    required this.whistleblowRepository,
     required this.tokenStorage,
     required this.router,
   });
@@ -135,6 +143,8 @@ class MyApp extends StatelessWidget {
   final PerformanceRepository performanceRepository;
   final PayrollRepository payrollRepository;
   final SubscriptionRepository subscriptionRepository;
+  final DocumentRepository documentRepository;
+  final WhistleblowRepository whistleblowRepository;
   /// Provided so EmployeeAvatar can hand the bearer token to the image loader —
   /// /files/** is authenticated and CachedNetworkImage does not go through dio.
   final TokenStorage tokenStorage;
@@ -159,6 +169,8 @@ class MyApp extends StatelessWidget {
         Provider.value(value: performanceRepository),
         Provider.value(value: payrollRepository),
         Provider.value(value: subscriptionRepository),
+        Provider.value(value: documentRepository),
+        Provider.value(value: whistleblowRepository),
         Provider.value(value: tokenStorage),
       ],
       child: MaterialApp.router(

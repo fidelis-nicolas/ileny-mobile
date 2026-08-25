@@ -83,3 +83,14 @@ const kInvitePermissions = {'user:create'};
 
 /// Writing announcements, as opposed to reading them.
 const kAnnouncementAuthorPermissions = {'announcement:create'};
+
+/// Reading and acting on whistleblowing reports.
+///
+/// Held by ORG_ADMIN and HR_MANAGER, and deliberately **not** by HOD. That exclusion is the one
+/// worth knowing: a head of department reads and acts on their own team everywhere else in this
+/// product, and here it would be exactly wrong — the concern a member of staff most needs to
+/// raise anonymously is frequently about their own head of department.
+///
+/// Nothing gates *filing* a report. Every signed-in user may do that, like the rest of the
+/// self-service screens: gating the ability to raise a concern would defeat the feature.
+const kWhistleblowHandlePermissions = {'whistleblow:handle'};

@@ -44,7 +44,10 @@ android {
         // Pinned per plan.txt section 1/6: Android 7+ floor, not whatever
         // the Flutter template default happens to be.
         minSdk = 24
-        targetSdk = flutter.targetSdkVersion
+        // Pinned rather than inherited: Play enforces a minimum target API, and
+        // tracking flutter.targetSdkVersion means a Flutter upgrade silently moves
+        // what we ship against. 36 is what the toolchain already resolved to.
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

@@ -61,6 +61,36 @@ name and SHA-1 in the Google Cloud console.
 Delivery also needs service-account credentials on the backend; without them the
 backend's `FirebaseConfig` stays a no-op.
 
+## Tester builds (Firebase App Distribution)
+
+Play submission is blocked until the upload keystore exists, but testers can
+get builds now through App Distribution, which has no signing requirement of
+its own — it serves the APK straight to enrolled devices.
+
+Distribute an **APK**, not the AAB: App Distribution only accepts a bundle for
+projects linked to Play, and this one is not linked yet.
+
+```
+flutter build apk --release
+firebase login          # once per machine, opens a browser
+firebase appdistribution:distribute \
+  build/app/outputs/flutter-apk/app-release.apk \
+  --app 1:753285259194:android:63891387bd0fb0e0894783 \
+  --groups testers \
+  --release-notes-file distribution-notes.txt
+```
+
+`.firebaserc` pins the project to `ileny-app`, so `--project` is not needed.
+The `--app` value is the `mobilesdk_app_id` from `android/app/google-services.json`;
+create the `testers` group under App Distribution → Testers & Groups first, or
+swap `--groups` for `--testers a@example.com,b@example.com`.
+
+Until `android/key.properties` exists these builds are **debug-signed**. That is
+fine for App Distribution, but two consequences follow: such a build can never be
+promoted to Play, and the day the real upload key lands the signature changes, so
+testers must uninstall before installing the next one — Android refuses an update
+signed by a different key.
+
 ## Legal documents
 
 The terms and privacy policy are **not** in this repo. They are static pages in

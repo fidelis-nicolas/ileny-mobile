@@ -52,5 +52,11 @@ app.*.map.json
 *.jks
 *.keystore
 
+# Firebase CLI local state. .firebaserc IS committed (it only names the
+# project); these are per-machine logs and caches.
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
+
 # Claude Code local session state
 .claude/

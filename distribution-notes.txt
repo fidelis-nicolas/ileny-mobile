@@ -1,0 +1,8 @@
+ileny mobile 1.0.0 (build 1)
+
+Documents and whistleblowing are now available on mobile: staff can upload
+their own documents and raise a concern from the phone. Polls in announcements
+can be answered in-app, and the client matches the fixed role ladder.
+
+Debug-signed tester build - uninstall any previous ileny build if the install
+is refused.

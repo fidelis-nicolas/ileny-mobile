@@ -8,6 +8,7 @@ import '../../legal/legal_documents.dart';
 import '../data/employee_models.dart';
 import '../data/employee_repository.dart';
 import 'employee_avatar.dart';
+import 'employee_labels.dart';
 
 /// View-only "me" profile, plus a Phase 5 self-service photo change.
 class ProfileScreen extends StatefulWidget {
@@ -182,6 +183,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _InfoTile(label: 'Email', value: employee.email),
                 _InfoTile(label: 'Phone', value: employee.phone),
                 _InfoTile(label: 'Hire date', value: employee.hireDate),
+                _InfoTile(
+                  label: 'Qualification',
+                  value: qualificationLabel(employee.qualification),
+                ),
                 const _LegalSection(),
               ],
             ),

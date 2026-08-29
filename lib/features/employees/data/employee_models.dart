@@ -10,6 +10,7 @@ class EmployeeResponse {
     this.phone,
     this.hireDate,
     this.employmentType,
+    this.qualification,
     required this.status,
     this.branchId,
     this.branchName,
@@ -33,6 +34,7 @@ class EmployeeResponse {
       phone: json['phone'] as String?,
       hireDate: json['hireDate'] as String?,
       employmentType: json['employmentType'] as String?,
+      qualification: json['qualification'] as String?,
       status: json['status'] as String,
       branchId: json['branchId'] as String?,
       branchName: json['branchName'] as String?,
@@ -55,6 +57,10 @@ class EmployeeResponse {
   final String? phone;
   final String? hireDate;
   final String? employmentType;
+
+  /// Raw backend enum (`BACHELORS`), null on records enrolled before the field
+  /// existed or never filled in. Render it through `qualificationLabel`.
+  final String? qualification;
   final String status;
   final String? branchId;
   final String? branchName;

@@ -9,6 +9,7 @@ import '../../discipline/screens/discipline_cases_screen.dart';
 import '../data/employee_models.dart';
 import '../data/employee_repository.dart';
 import 'employee_avatar.dart';
+import 'employee_labels.dart';
 
 const _statusOptions = ['ACTIVE', 'INACTIVE', 'TERMINATED', 'SUSPENDED'];
 
@@ -191,6 +192,10 @@ class _EmployeeDetailScreenState extends State<EmployeeDetailScreen> {
           _InfoTile(label: 'Status', value: _employee.status),
           _InfoTile(label: 'Email', value: _employee.email),
           _InfoTile(label: 'Phone', value: _employee.phone),
+          _InfoTile(
+            label: 'Qualification',
+            value: qualificationLabel(_employee.qualification),
+          ),
           _InfoTile(
             label: 'Login account',
             value: _employee.hasLoginAccount || _invited ? 'Yes' : 'No',

@@ -1,8 +1,9 @@
 ileny mobile 1.0.0 (build 2)
 
-No new features since build 1 - documents, whistleblowing, in-app poll
-answering and the fixed role ladder are all unchanged.
+An employee's highest qualification now shows on their profile and on the
+directory drill-down. Documents, whistleblowing, in-app poll answering and
+the fixed role ladder are unchanged since build 1.
 
-This build is signed with the real upload key rather than the debug key, so
-Android will refuse it as an update. Uninstall the previous ileny build
-before installing this one.
+Uninstall any earlier ileny build before installing this one. Android will
+not replace an installed app whose signature differs, and this build is
+signed with a different key.

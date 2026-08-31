@@ -8,6 +8,7 @@ class AttendanceResponse {
     this.clockOut,
     this.workHours,
     required this.source,
+    this.clockOutSource,
     required this.status,
   });
 
@@ -21,6 +22,7 @@ class AttendanceResponse {
       clockOut: json['clockOut'] as String?,
       workHours: (json['workHours'] as num?)?.toDouble(),
       source: json['source'] as String,
+      clockOutSource: json['clockOutSource'] as String?,
       status: json['status'] as String,
     );
   }
@@ -32,7 +34,13 @@ class AttendanceResponse {
   final String? clockIn;
   final String? clockOut;
   final double? workHours;
+  /// How the day was opened.
   final String source;
+
+  /// How the day was closed, which need not match [source]. Null while still
+  /// clocked in, and on records written before the clock-out method was kept.
+  final String? clockOutSource;
+
   final String status;
 }
 

@@ -118,18 +118,18 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     }
   }
 
-  /// The backend re-validates clock-out against the source the day was opened
-  /// with, so what this has to collect depends on [_today]: a fresh QR scan
-  /// for a QR_CODE day, a GPS fix for a GEOFENCE one, and nothing at all for
-  /// a day opened manually or by a biometric device.
+  /// The geofence clock-out, and the counterpart to [_clockIn].
+  ///
+  /// It no longer matters how the day was opened: the backend validates the
+  /// method being used now, so a QR scan at the gate this morning does not
+  /// oblige anyone to find that code again to leave. The one exception is a day
+  /// opened by hand or by a biometric device — those carry no proof of presence
+  /// and are closed with none, which the backend reads as that record's own
+  /// source, and asking for a GPS fix on their behalf would only invite a
+  /// refusal from an organisation that does not allow geofencing.
   Future<void> _clockOut() async {
     final source = _today?.source;
-
-    String? qrToken;
-    if (source == 'QR_CODE') {
-      qrToken = await _scanQrToken();
-      if (qrToken == null || !mounted) return;
-    }
+    final byLocation = source == 'GEOFENCE' || source == 'QR_CODE';
 
     setState(() => _clocking = true);
     final repository = context.read<AttendanceRepository>();
@@ -137,16 +137,16 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     try {
       double? latitude;
       double? longitude;
-      if (source == 'GEOFENCE') {
+      if (byLocation) {
         final position = await _locationService.getCurrentPosition();
         latitude = position.latitude;
         longitude = position.longitude;
       }
       final record = await repository.clockOut(
         employeeId,
+        source: byLocation ? 'GEOFENCE' : null,
         latitude: latitude,
         longitude: longitude,
-        qrToken: qrToken,
       );
       setState(() => _today = record);
       _historyKey.currentState?.refresh();
@@ -154,6 +154,30 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       if (mounted) _showError(e.message);
     } on ApiException catch (e) {
       if (mounted) _showError(_explainGeofenceError(e));
+    } finally {
+      if (mounted) setState(() => _clocking = false);
+    }
+  }
+
+  /// QR clock-out, the counterpart to [_clockInWithQrCode] and available
+  /// whatever the day was opened with.
+  Future<void> _clockOutWithQrCode() async {
+    final qrToken = await _scanQrToken();
+    if (qrToken == null || !mounted) return;
+
+    setState(() => _clocking = true);
+    final repository = context.read<AttendanceRepository>();
+    final employeeId = _employeeId;
+    try {
+      final record = await repository.clockOut(
+        employeeId,
+        source: 'QR_CODE',
+        qrToken: qrToken,
+      );
+      setState(() => _today = record);
+      _historyKey.currentState?.refresh();
+    } on ApiException catch (e) {
+      if (mounted) _showError(e.message);
     } finally {
       if (mounted) setState(() => _clocking = false);
     }
@@ -236,6 +260,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               onClockIn: _clockIn,
               onClockInWithQrCode: _clockInWithQrCode,
               onClockOut: _clockOut,
+              onClockOutWithQrCode: _clockOutWithQrCode,
             ),
             if (_readDenied) ...[
               const SizedBox(height: 12),
@@ -303,6 +328,7 @@ class _TodayCard extends StatelessWidget {
     required this.onClockIn,
     required this.onClockInWithQrCode,
     required this.onClockOut,
+    required this.onClockOutWithQrCode,
   });
 
   final bool loading;
@@ -312,12 +338,12 @@ class _TodayCard extends StatelessWidget {
   final VoidCallback onClockIn;
   final VoidCallback onClockInWithQrCode;
   final VoidCallback onClockOut;
+  final VoidCallback onClockOutWithQrCode;
 
   @override
   Widget build(BuildContext context) {
     final clockedIn = today != null && today!.clockOut == null;
     final completed = today != null && today!.clockOut != null;
-    final clockedInByQr = clockedIn && today!.source == 'QR_CODE';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -370,24 +396,29 @@ class _TodayCard extends StatelessWidget {
                       completed
                           ? 'Done for today'
                           : clockedIn
-                              ? clockedInByQr
-                                  ? 'Scan QR to clock out'
-                                  : 'Clock out'
+                              ? 'Clock out'
                               : 'Clock in',
                     ),
             ),
           ),
-          // Offered only as a way to *open* the day — once clocked in, the
-          // backend pins clock-out to the source the day was opened with, so
-          // a second choice here would just produce a guaranteed rejection.
-          if (!clockedIn && !completed) ...[
+          // The QR alternative, at both ends of the day. It used to be offered
+          // only as a way to *open* one, because the backend pinned clock-out to
+          // the source the day was opened with and a second choice here would
+          // have been a guaranteed rejection. It validates the method being used
+          // now, so somebody who scanned in at the gate can leave by GPS, and
+          // somebody who clocked in by GPS can scan out.
+          if (!completed) ...[
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: clocking ? null : onClockInWithQrCode,
+                onPressed: clocking
+                    ? null
+                    : clockedIn
+                        ? onClockOutWithQrCode
+                        : onClockInWithQrCode,
                 icon: const Icon(Icons.qr_code_scanner, size: 18),
-                label: const Text('Clock in with QR code'),
+                label: Text(clockedIn ? 'Clock out with QR code' : 'Clock in with QR code'),
               ),
             ),
           ],

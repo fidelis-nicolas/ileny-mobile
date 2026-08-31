@@ -52,13 +52,18 @@ class AttendanceRepository {
     }
   }
 
-  /// Clock-out re-runs the same source validation as clock-in, against the
-  /// *original* clock-in's source rather than anything the client picks. So a
-  /// GEOFENCE clock-in must be closed with `latitude`/`longitude`, and a
-  /// QR_CODE one with a freshly scanned [qrToken]; sources that need neither
-  /// (MANUAL, BIOMETRIC_DEVICE…) can be closed with both omitted.
+  /// Clock-out runs the same source validation as clock-in, but against the
+  /// method being used *now*: [source] need not be the one the day was opened
+  /// with, so a QR clock-in at the gate can be closed by GPS from a desk where
+  /// the organisation allows both.
+  ///
+  /// The evidence still has to match the method — GEOFENCE needs
+  /// `latitude`/`longitude` inside the branch radius, QR_CODE a freshly scanned
+  /// [qrToken]. Omit all three and the backend reads the clock-in's own source,
+  /// which is how a day opened by hand or by a biometric device is closed.
   Future<AttendanceResponse> clockOut(
     String employeeId, {
+    String? source,
     double? latitude,
     double? longitude,
     String? qrToken,
@@ -67,6 +72,7 @@ class AttendanceRepository {
       final response = await _dioClient.dio.post<Map<String, dynamic>>(
         '/attendance/$employeeId/clock-out',
         data: {
+          if (source != null) 'source': source,
           if (latitude != null) 'latitude': latitude,
           if (longitude != null) 'longitude': longitude,
           if (qrToken != null) 'qrToken': qrToken,

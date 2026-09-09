@@ -298,10 +298,7 @@ class _Greeting extends StatelessWidget {
 
     // First name only. The full legal name is the wrong register for a
     // greeting, and it is the part most likely to wrap on a narrow phone.
-    final fullName = user?.employeeFullName;
-    final name = (fullName == null || fullName.trim().isEmpty)
-        ? user?.email
-        : fullName.trim().split(RegExp(r'\s+')).first;
+    final name = _firstName(user);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -319,6 +316,29 @@ class _Greeting extends StatelessWidget {
       ],
     );
   }
+}
+
+/// The name to greet someone by, best available first.
+///
+/// Not every account has an employee record behind it — an administrator set up
+/// to run the organisation need not be on its payroll — so the full name can be
+/// missing. It used to fall through to the raw email address, which greeted such
+/// a user as "admin@ileny.app": correct, and plainly not a name. The local part
+/// is a better guess, since a work address is usually built from one, and it is
+/// split on the separators that commonly join a first and last name so
+/// "jonas.weber" greets Jonas rather than the whole handle.
+String? _firstName(MeResponse? user) {
+  final fullName = user?.employeeFullName?.trim();
+  if (fullName != null && fullName.isNotEmpty) {
+    return fullName.split(RegExp(r'\s+')).first;
+  }
+
+  final email = user?.email;
+  if (email == null || !email.contains('@')) return null;
+  final local = email.split('@').first.split(RegExp(r'[._-]')).first;
+  if (local.isEmpty) return null;
+
+  return local[0].toUpperCase() + local.substring(1);
 }
 
 /// Small-caps section label. The letterspaced sans is the counterweight to the

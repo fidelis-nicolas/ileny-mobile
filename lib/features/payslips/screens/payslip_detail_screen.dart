@@ -6,6 +6,7 @@ import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/format/money.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../data/payslip_models.dart';
@@ -113,7 +114,7 @@ class _AmountRow extends StatelessWidget {
           ),
         ),
         Text(
-          value.toStringAsFixed(2),
+          formatMoney(value),
           style: TextStyle(
             color: context.palette.primary,
             fontSize: emphasize ? 18 : 15,

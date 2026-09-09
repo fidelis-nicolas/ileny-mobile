@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/format/money.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/paginated_list_view.dart';
 import '../data/payslip_models.dart';
@@ -28,7 +29,7 @@ class PayslipsScreen extends StatelessWidget {
               period,
               style: TextStyle(color: context.palette.primary, fontWeight: FontWeight.w600),
             ),
-            subtitle: Text('Net pay: ${payslip.netSalary.toStringAsFixed(2)}'),
+            subtitle: Text('Net pay: ${formatMoney(payslip.netSalary)}'),
             trailing: Icon(Icons.chevron_right, color: context.palette.textMuted),
             onTap: () {
               Navigator.of(context).push(

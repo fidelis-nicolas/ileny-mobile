@@ -53,7 +53,14 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     final repository = context.read<AttendanceRepository>();
     final now = DateTime.now();
     try {
-      final history = await repository.history(_employeeId, page: 0, size: 1);
+      // A month worth of records, not one. GET /attendance/employee/{id} applies
+      // no ORDER BY, so a page is an arbitrary subset of the history and asking
+      // for a single row almost never returns the record for today. That is what
+      // made this screen read "Not clocked in" while the web page showed the same
+      // day clocked in; the web client fetches 31 for the same reason. Still a
+      // workaround rather than a fix: until the endpoint sorts by attendanceDate,
+      // an employee with more records than the page size can miss today anyway.
+      final history = await repository.history(_employeeId, page: 0, size: 31);
       final summary =
           await repository.summary(_employeeId, month: now.month, year: now.year);
       final todayIso = DateFormat('yyyy-MM-dd').format(now);

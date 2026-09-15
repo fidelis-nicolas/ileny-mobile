@@ -50,22 +50,41 @@ becomes `versionCode` and must strictly increase.
 
 ## Firebase
 
-Push notifications run through the `ileny-app` Firebase project. Two files must
-stay in step, and both are committed:
+Push notifications run through the `ileny-app` Firebase project, which has one
+app registered per platform:
 
-- `android/app/google-services.json` — read by the Google Services Gradle plugin
-- `lib/firebase_options.dart` — read by `Firebase.initializeApp`
+| | App ID | Config read from |
+|---|---|---|
+| Android | `1:753285259194:android:63891387bd0fb0e0894783` | `android/app/google-services.json` + `lib/firebase_options.dart` |
+| iOS | `1:753285259194:ios:222d7e27eeb43715894783` | `ios/Runner/GoogleService-Info.plist` |
 
-Regenerate both with `flutterfire configure --project=ileny-app`. The API key in
-them is not a secret (it ships in every APK) but should be restricted by package
-name and SHA-1 in the Google Cloud console.
+All three files are committed. Android needs two of them because the Gradle
+plugin and `Firebase.initializeApp` read different ones, and they must stay in
+step; iOS needs only the plist, because the Firebase iOS SDK configures itself
+from the bundle. Regenerate any of them with `flutterfire configure
+--project=ileny-app`. The API keys are not secrets — they ship inside every
+build — but should be restricted by bundle ID and SHA-1 in the Google Cloud
+console.
 
-iOS is not wired up: there is no iOS app in the Firebase project yet, and the
-SDK there reads a bundled `GoogleService-Info.plist` rather than anything in
-Dart. See the iOS section below.
+The iOS plist is in the Runner target's **Resources** build phase, not just the
+folder. The SDK loads it from the app bundle, so a file that is merely present
+on disk configures nothing.
 
-Delivery also needs service-account credentials on the backend; without them the
-backend's `FirebaseConfig` stays a no-op.
+### What still has to be true for a push to arrive
+
+Client registration is only one end of it. In order:
+
+1. **The backend can send.** `app.firebase.enabled` defaults to `false` and
+   `FirebaseConfig` returns a null bean without it, which makes
+   `PushNotificationService` a silent no-op — so `FCM_ENABLED=true` and
+   `FCM_CREDENTIALS_PATH` must both be set in the deployed environment. This is
+   worth checking before blaming a client: if it is off, no push has ever been
+   delivered on **either** platform, and nothing in the app or the logs would
+   say so.
+2. **FCM can reach the platform.** Android works off the project alone. iOS
+   additionally needs an APNs key — see below.
+3. **The device registered a token.** `PushNotificationService.start` does this
+   on sign-in and drops it on sign-out.
 
 ## Tester builds (Firebase App Distribution)
 
@@ -132,10 +151,14 @@ project file; without it `flutter build ipa` fails before it compiles anything.
   `ios/Runner/Info.plist`. iOS terminates the app rather than showing a prompt
   when one is missing, so the photo library entry matters even though only the
   discipline-case picker reaches it.
-- **Entitlements** in `ios/Runner/{DebugProfile,Release}.entitlements`, carrying
-  Keychain Sharing. flutter_secure_storage needs it on iOS: without it the
-  session token appears to save and does not, so the user is signed out on every
-  cold start.
+- **Entitlements** in `ios/Runner/{DebugProfile,Release}.entitlements`:
+  - *Keychain Sharing*, which flutter_secure_storage needs on iOS — without it
+    the session token appears to save and does not, so the user is signed out on
+    every cold start.
+  - *`aps-environment`*, `development` in DebugProfile and `production` in
+    Release. The two APNs environments issue different device tokens and neither
+    accepts the other's, which is the usual explanation for a push that works
+    from Xcode but not from TestFlight, or the reverse.
 - **App icon and launch screen**, generated from `assets/icons/ileny_favicon.svg`
   by `node store/ios/generate-ios-icons.js`. The launch screen follows the system
   appearance, as the Android one does.
@@ -145,26 +168,32 @@ project file; without it `flutter build ipa` fails before it compiles anything.
 
 ### What iOS still needs
 
-1. **An Apple Developer Program membership** ($99/yr) for TestFlight or the App
-   Store. A free account can run the app on a connected device, nothing more.
-2. **Push notifications.** They do not work on iOS yet and will fail quietly —
-   `main` catches the failed `Firebase.initializeApp` and the notification badge
-   falls back to polling, exactly as on an Android build with no Firebase. Three
-   things are missing, in order:
-   - an iOS app registered in the `ileny-app` Firebase project, with
-     `GoogleService-Info.plist` added to `ios/Runner/` **and dragged into the
-     Xcode project** so it is copied into the bundle (`flutterfire configure
-     --project=ileny-app` does both);
-   - an APNs authentication key (.p8) uploaded to that Firebase iOS app, which
-     requires the paid membership above;
-   - the `aps-environment` entitlement, commented into both `.entitlements`
-     files ready to uncomment — `development` in DebugProfile, `production` in
-     Release. It is left out until the rest exists, because asking for a
-     capability the signing account does not hold fails the build outright.
+1. **An Apple Developer Program membership** ($99/yr) for TestFlight, the App
+   Store, and push. This is now a hard requirement rather than a distribution
+   one: the entitlements ask for `aps-environment`, and a free personal team
+   cannot sign that — Xcode fails the build with "Push Notifications is not
+   available" rather than dropping the capability. If you need to run on a
+   device before the membership exists, delete the `aps-environment` key from
+   `ios/Runner/DebugProfile.entitlements` and put it back afterwards.
+2. **An APNs authentication key**, which is the one remaining piece of iOS
+   push. Everything on this side is done: the Firebase iOS app exists,
+   `GoogleService-Info.plist` is committed and in the Resources build phase, and
+   `aps-environment` is set in both entitlements files. But FCM delivers to iOS
+   *through* Apple, and it cannot until it holds a key:
 
-   Unlike Android, iOS reads its Firebase config from the bundled plist, so
-   `lib/firebase_options.dart` deliberately returns null for iOS rather than
-   keeping a second copy of the credentials in Dart.
+   1. In the Apple Developer portal → Keys, create a key with **Apple Push
+      Notifications service (APNs)** enabled. Download the `.p8` **once** — Apple
+      will not serve it again — and note the Key ID and your Team ID.
+   2. Firebase console → Project settings → Cloud Messaging → the **ileny iOS**
+      app → Upload the `.p8` with that Key ID and Team ID.
+
+   Both steps need the paid membership above; the portal has no Keys section
+   without it.
+
+   Until then the app runs normally and registers no usable token. Nothing
+   crashes: `main` catches a failed init, `start()` catches a failed
+   registration, and the unread badge falls back to `NotificationsState`'s
+   polling — the same degraded mode an Android build with no Firebase runs in.
 3. **A decision on iPad.** The project still declares the template's universal
    device family, so the App Store will expect iPad screenshots and judge the
    layout on one. Nothing here was designed for that width. Setting

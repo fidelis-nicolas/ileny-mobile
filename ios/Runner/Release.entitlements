@@ -2,6 +2,13 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Release builds — TestFlight and the App Store — talk to the production
+	     APNs host. See the note in DebugProfile.entitlements: the two
+	     environments issue separate device tokens and neither accepts the
+	     other's. -->
+	<key>aps-environment</key>
+	<string>production</string>
+
 	<!-- Keychain Sharing. flutter_secure_storage's darwin implementation
 	     requires this entitlement to be present even when no access group is
 	     named; without it writes appear to succeed and silently store nothing,
@@ -9,15 +16,5 @@
 	     Leave the array empty unless the app joins an App Group. -->
 	<key>keychain-access-groups</key>
 	<array/>
-
-	<!-- Push notifications are NOT enabled yet. Firebase has no iOS app in the
-	     `ileny-app` project and no APNs key is uploaded, so FCM could not
-	     deliver to this bundle even with the entitlement in place — and asking
-	     for a capability the signing account may not hold only fails the build.
-	     To turn push on, see the iOS section of README.md, then add:
-
-	         <key>aps-environment</key>
-	         <string>development</string>   <!- production in Release.entitlements ->
-	-->
 </dict>
 </plist>

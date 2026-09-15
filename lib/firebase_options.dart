@@ -12,11 +12,14 @@ import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatf
 /// iOS deliberately does not. The Firebase iOS SDK configures itself from
 /// `ios/Runner/GoogleService-Info.plist`, so [currentPlatformOrNull] returns
 /// null there and `main` calls `Firebase.initializeApp()` with no arguments —
-/// one source of truth instead of a plist and a Dart copy that can drift.
-/// Until an iOS app is registered in the `ileny-app` project that plist does
-/// not exist, initialization throws, and `main` catches it: push is simply off
-/// on iOS and [NotificationsState]'s polling carries the unread badge. See the
-/// iOS section of README.md for what registering it involves.
+/// one source of truth instead of a plist and a Dart copy that can drift. That
+/// plist is committed, and listed in the Runner target's Resources build phase:
+/// the SDK reads it out of the app bundle, so a copy sitting unreferenced in
+/// the folder would configure nothing.
+///
+/// Registering the app is not the same as being able to deliver to it. Until an
+/// APNs authentication key is uploaded to the Firebase iOS app, FCM has no way
+/// to reach the device and sends fail — see README.md.
 ///
 /// The `apiKey` below is not a secret: it ships inside every APK and only
 /// identifies the project to Google's SDKs. Restrict it by package name and

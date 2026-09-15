@@ -41,10 +41,21 @@ class PushNotificationService {
       final settings = await messaging.requestPermission();
       if (settings.authorizationStatus == AuthorizationStatus.denied) return;
 
+      // iOS shows nothing at all for a push that arrives while the app is
+      // open unless asked to; Android has no equivalent switch and stays
+      // silent in the foreground. Opting in here rather than matching
+      // Android's silence because on iOS a banner over the running app is the
+      // platform convention, and the alternative is a notification the user
+      // has no way of knowing arrived.
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
       _tokenRefreshSub = messaging.onTokenRefresh.listen(_registerToken);
-      // Android/iOS don't show a system banner while the app is
-      // foregrounded — refresh the badge immediately instead of waiting for
-      // the next poll tick.
+      // Whether or not a banner is shown, the unread badge should be right
+      // immediately rather than at the next poll tick.
       _foregroundSub = FirebaseMessaging.onMessage.listen((_) {
         unawaited(_notificationsState.refreshNow());
       });

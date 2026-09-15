@@ -34,9 +34,10 @@ void main() async {
 
   // Best-effort: a Firebase misconfiguration must never block app startup —
   // push simply stays off for the session and NotificationsState's polling
-  // covers it. On iOS that is still the normal case: no iOS app is registered
-  // in the Firebase project yet, so there is no GoogleService-Info.plist to
-  // configure from and this throws every launch. See firebase_options.dart.
+  // covers it. Both platforms are configured now, so this failing means
+  // something is wrong rather than merely unfinished; it is still caught,
+  // because a notification channel is not worth a launch failure.
+  // See firebase_options.dart.
   try {
     final options = DefaultFirebaseOptions.currentPlatformOrNull;
     await (options == null

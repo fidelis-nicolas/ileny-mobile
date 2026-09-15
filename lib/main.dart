@@ -32,11 +32,16 @@ import 'features/whistleblow/data/whistleblow_repository.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Best-effort: a Firebase misconfiguration (still-placeholder credentials,
-  // see firebase_options.dart) must never block app startup — push simply
-  // stays off for the session and NotificationsState's polling covers it.
+  // Best-effort: a Firebase misconfiguration must never block app startup —
+  // push simply stays off for the session and NotificationsState's polling
+  // covers it. On iOS that is still the normal case: no iOS app is registered
+  // in the Firebase project yet, so there is no GoogleService-Info.plist to
+  // configure from and this throws every launch. See firebase_options.dart.
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    final options = DefaultFirebaseOptions.currentPlatformOrNull;
+    await (options == null
+        ? Firebase.initializeApp()
+        : Firebase.initializeApp(options: options));
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   } catch (e) {
     debugPrint('Firebase.initializeApp failed (push disabled for this session): $e');

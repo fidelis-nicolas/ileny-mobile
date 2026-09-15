@@ -41,9 +41,6 @@ class PushNotificationService {
       final settings = await messaging.requestPermission();
       if (settings.authorizationStatus == AuthorizationStatus.denied) return;
 
-      final token = await messaging.getToken();
-      if (token != null) unawaited(_registerToken(token));
-
       _tokenRefreshSub = messaging.onTokenRefresh.listen(_registerToken);
       // Android/iOS don't show a system banner while the app is
       // foregrounded — refresh the badge immediately instead of waiting for
@@ -51,6 +48,16 @@ class PushNotificationService {
       _foregroundSub = FirebaseMessaging.onMessage.listen((_) {
         unawaited(_notificationsState.refreshNow());
       });
+
+      // iOS hands the app its APNs token asynchronously, some way after
+      // permission is granted, and getToken() throws outright if FCM has not
+      // been given one yet — which on a cold first launch is the usual
+      // ordering. Nothing is lost by leaving now: onTokenRefresh, subscribed
+      // above, delivers the FCM token as soon as the APNs one lands.
+      if (Platform.isIOS && await messaging.getAPNSToken() == null) return;
+
+      final token = await messaging.getToken();
+      if (token != null) unawaited(_registerToken(token));
     } catch (e) {
       debugPrint('PushNotificationService.start failed (push disabled for this session): $e');
     }

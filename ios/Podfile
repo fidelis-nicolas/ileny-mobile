@@ -1,0 +1,64 @@
+# ileny iOS pods.
+#
+# `flutter build` generates this file on a Mac when it is missing, but the
+# generated one pins whatever platform floor the Flutter template ships with —
+# 12.0 today — and the Firebase pods refuse to build below 15.0. Committing it
+# means the floor is a reviewed decision rather than a surprise on the first
+# `pod install`.
+#
+# 15.0 is set by firebase_core 4.12 / firebase_messaging 16.4, which depend on
+# the Firebase iOS SDK 12.x. Every other plugin here tops out at 13.0. Keep this
+# in step with IPHONEOS_DEPLOYMENT_TARGET in Runner.xcodeproj.
+platform :ios, '15.0'
+
+# CocoaPods' analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+target 'Runner' do
+  use_frameworks!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+
+    target.build_configurations.each do |config|
+      # Pods default to their own podspec floor, several of which are below the
+      # app's. Xcode 16 turns "pod deployment target lower than the app's" into
+      # a build warning per pod; raising them here keeps the build log readable
+      # and guarantees nothing is compiled against an older SDK contract than
+      # the app itself declares.
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
+  end
+end

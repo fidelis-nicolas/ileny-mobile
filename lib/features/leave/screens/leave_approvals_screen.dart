@@ -22,15 +22,116 @@ class _LeaveApprovalsScreenState extends State<LeaveApprovalsScreen> {
   final _busyIds = <String>{};
 
   Future<void> _approve(LeaveRequestResponse request) async {
+    final decision = await _promptApproval(request);
+    if (decision == null || !mounted) return;
+
     setState(() => _busyIds.add(request.id));
     try {
-      await context.read<LeaveRepository>().approve(request.id);
+      await context.read<LeaveRepository>().approve(
+        request.id,
+        approvedDays: decision.approvedDays,
+        comment: decision.comment,
+      );
       _listKey.currentState?.refresh();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              decision.approvedDays < request.daysRequested
+                  ? '${decision.approvedDays} of ${request.daysRequested.toInt()} days approved.'
+                  : 'Leave request approved.',
+            ),
+          ),
+        );
+      }
     } on ApiException catch (e) {
       if (mounted) _showError(e.message);
     } finally {
       if (mounted) setState(() => _busyIds.remove(request.id));
     }
+  }
+
+  Future<_ApprovalDecision?> _promptApproval(
+    LeaveRequestResponse request,
+  ) async {
+    final daysController = TextEditingController(
+      text: request.daysRequested.toInt().toString(),
+    );
+    final commentController = TextEditingController();
+    final maxDays = request.daysRequested.toInt();
+
+    final decision = await showDialog<_ApprovalDecision>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final approvedDays = int.tryParse(daysController.text.trim());
+          final error =
+              approvedDays == null ||
+              approvedDays < 1 ||
+              approvedDays > maxDays;
+
+          return AlertDialog(
+            title: Text('Approve leave for ${request.employeeFullName}?'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${request.daysRequested.toInt()} working days requested '
+                    'from ${request.startDate} to ${request.endDate}.',
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: daysController,
+                    autofocus: true,
+                    keyboardType: TextInputType.number,
+                    onChanged: (_) => setDialogState(() {}),
+                    decoration: InputDecoration(
+                      labelText: 'Days to approve',
+                      helperText:
+                          'Approves the first working days; weekends and holidays are skipped.',
+                      errorText: error
+                          ? 'Enter a whole number from 1 to $maxDays.'
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: commentController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Comment (optional)',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: error
+                    ? null
+                    : () => Navigator.of(context).pop(
+                        _ApprovalDecision(
+                          approvedDays: approvedDays,
+                          comment: commentController.text.trim(),
+                        ),
+                      ),
+                child: const Text('Approve'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    daysController.dispose();
+    commentController.dispose();
+    return decision;
   }
 
   Future<void> _reject(LeaveRequestResponse request) async {
@@ -75,7 +176,9 @@ class _LeaveApprovalsScreenState extends State<LeaveApprovalsScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -113,7 +216,10 @@ class _LeaveApprovalsScreenState extends State<LeaveApprovalsScreen> {
                   Text(
                     '${request.leaveTypeName} · ${request.startDate} → ${request.endDate} · '
                     '${request.daysRequested.toStringAsFixed(1)} day(s)',
-                    style: TextStyle(color: context.palette.textMuted, fontSize: 13),
+                    style: TextStyle(
+                      color: context.palette.textMuted,
+                      fontSize: 13,
+                    ),
                   ),
                   if (request.reason != null && request.reason!.isNotEmpty) ...[
                     const SizedBox(height: 4),
@@ -154,4 +260,11 @@ class _LeaveApprovalsScreenState extends State<LeaveApprovalsScreen> {
       ),
     );
   }
+}
+
+class _ApprovalDecision {
+  const _ApprovalDecision({required this.approvedDays, required this.comment});
+
+  final int approvedDays;
+  final String comment;
 }

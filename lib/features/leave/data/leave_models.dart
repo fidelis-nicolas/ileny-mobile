@@ -72,11 +72,14 @@ class LeaveRequestResponse {
     required this.startDate,
     required this.endDate,
     required this.daysRequested,
+    this.approvedDays,
+    this.approvedEndDate,
     this.reason,
     required this.status,
     this.approvedById,
     this.approvedByName,
     this.approvedAt,
+    this.approvalComment,
   });
 
   factory LeaveRequestResponse.fromJson(Map<String, dynamic> json) {
@@ -89,11 +92,14 @@ class LeaveRequestResponse {
       startDate: json['startDate'] as String,
       endDate: json['endDate'] as String,
       daysRequested: (json['daysRequested'] as num).toDouble(),
+      approvedDays: (json['approvedDays'] as num?)?.toDouble(),
+      approvedEndDate: json['approvedEndDate'] as String?,
       reason: json['reason'] as String?,
       status: json['status'] as String,
       approvedById: json['approvedById'] as String?,
       approvedByName: json['approvedByName'] as String?,
       approvedAt: json['approvedAt'] as String?,
+      approvalComment: json['approvalComment'] as String?,
     );
   }
 
@@ -105,9 +111,12 @@ class LeaveRequestResponse {
   final String startDate;
   final String endDate;
   final double daysRequested;
+  final double? approvedDays;
+  final String? approvedEndDate;
   final String? reason;
   final String status;
   final String? approvedById;
   final String? approvedByName;
   final String? approvedAt;
+  final String? approvalComment;
 }

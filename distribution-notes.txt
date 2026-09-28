@@ -1,9 +1,6 @@
-ileny mobile 1.0.0 (build 2)
+ileny mobile 1.0.0 (build 5)
 
-An employee's highest qualification now shows on their profile and on the
-directory drill-down. Documents, whistleblowing, in-app poll answering and
-the fixed role ladder are unchanged since build 1.
-
-Uninstall any earlier ileny build before installing this one. Android will
-not replace an installed app whose signature differs, and this build is
-signed with a different key.
+Admins can now approve only part of a leave request. The approval screen lets
+the reviewer choose the number of working days to grant and add an optional
+comment. Leave history shows the requested and approved day counts and the
+shortened approved-through date.

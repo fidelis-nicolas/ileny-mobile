@@ -83,7 +83,10 @@ class LeaveRepository {
           'size': size,
         },
       );
-      return PageResponse.fromJson(response.data!, LeaveRequestResponse.fromJson);
+      return PageResponse.fromJson(
+        response.data!,
+        LeaveRequestResponse.fromJson,
+      );
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
     }
@@ -93,10 +96,19 @@ class LeaveRepository {
   /// approve/reject any pending request tenant-wide — the backend does not
   /// restrict this to "the requester's manager" since no such relationship
   /// is modeled.
-  Future<LeaveRequestResponse> approve(String id) async {
+  Future<LeaveRequestResponse> approve(
+    String id, {
+    required int approvedDays,
+    String? comment,
+  }) async {
     try {
-      final response =
-          await _dioClient.dio.patch<Map<String, dynamic>>('/leave/requests/$id/approve');
+      final response = await _dioClient.dio.patch<Map<String, dynamic>>(
+        '/leave/requests/$id/approve',
+        data: {
+          'approvedDays': approvedDays,
+          if (comment != null && comment.isNotEmpty) 'comment': comment,
+        },
+      );
       return LeaveRequestResponse.fromJson(response.data!);
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);

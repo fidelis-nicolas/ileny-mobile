@@ -79,7 +79,9 @@ class _LeaveScreenState extends State<LeaveScreen> {
   @override
   Widget build(BuildContext context) {
     final repository = context.read<LeaveRepository>();
-    final isManager = context.watch<AuthState>().hasAnyPermission(kTeamLeavePermissions);
+    final isManager = context.watch<AuthState>().hasAnyPermission(
+      kTeamLeavePermissions,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -123,17 +125,22 @@ class _LeaveScreenState extends State<LeaveScreen> {
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (_balancesError != null)
-              Text(_balancesError!, style: TextStyle(color: context.palette.danger))
+              Text(
+                _balancesError!,
+                style: TextStyle(color: context.palette.danger),
+              )
             else if (_balances.isEmpty)
               Text(
                 'No leave balances set up yet.',
                 style: TextStyle(color: context.palette.textMuted),
               )
             else
-              ..._balances.map((b) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _BalanceCard(balance: b),
-                  )),
+              ..._balances.map(
+                (b) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _BalanceCard(balance: b),
+                ),
+              ),
             const SizedBox(height: 16),
             Text(
               'History',
@@ -149,9 +156,13 @@ class _LeaveScreenState extends State<LeaveScreen> {
               child: PaginatedListView<LeaveRequestResponse>(
                 key: _historyKey,
                 emptyMessage: 'No leave requests yet.',
-                fetchPage: (page, size) =>
-                    repository.requests(employeeId: _employeeId, page: page, size: size),
-                itemBuilder: (context, request) => _RequestTile(request: request),
+                fetchPage: (page, size) => repository.requests(
+                  employeeId: _employeeId,
+                  page: page,
+                  size: size,
+                ),
+                itemBuilder: (context, request) =>
+                    _RequestTile(request: request),
               ),
             ),
           ],
@@ -179,7 +190,10 @@ class _BalanceCard extends StatelessWidget {
           Expanded(
             child: Text(
               balance.leaveTypeName,
-              style: TextStyle(fontWeight: FontWeight.w600, color: context.palette.primary),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: context.palette.primary,
+              ),
             ),
           ),
           Text(
@@ -218,14 +232,18 @@ class _RequestTile extends StatelessWidget {
         '${request.leaveTypeName} · ${request.startDate} → ${request.endDate}',
         style: Theme.of(context).textTheme.titleSmall,
       ),
-      subtitle: Text('${request.daysRequested.toStringAsFixed(1)} day(s)'
-          '${request.reason != null && request.reason!.isNotEmpty ? ' · ${request.reason}' : ''}'),
+      subtitle: Text(
+        '${request.daysRequested.toStringAsFixed(1)} day(s) requested'
+        '${request.approvedDays != null ? ' · ${request.approvedDays!.toStringAsFixed(1)} approved' : ''}'
+        '${request.approvedEndDate != null && request.approvedEndDate != request.endDate ? ' through ${request.approvedEndDate}' : ''}'
+        '${request.reason != null && request.reason!.isNotEmpty ? ' · ${request.reason}' : ''}',
+      ),
       trailing: Text(
         request.status,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: _statusColor(context),
-              fontWeight: FontWeight.w600,
-            ),
+          color: _statusColor(context),
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

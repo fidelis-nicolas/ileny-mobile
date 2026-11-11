@@ -77,6 +77,8 @@ class SubscriptionPaymentResponse {
     this.planName,
     required this.billingInterval,
     required this.amount,
+    this.transactionFee,
+    this.totalAmount,
     required this.currency,
     required this.status,
     required this.purpose,
@@ -91,6 +93,8 @@ class SubscriptionPaymentResponse {
       planName: json['planName'] as String?,
       billingInterval: json['billingInterval'] as String? ?? '',
       amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      transactionFee: (json['transactionFee'] as num?)?.toDouble(),
+      totalAmount: (json['totalAmount'] as num?)?.toDouble(),
       currency: json['currency'] as String? ?? 'NGN',
       status: json['status'] as String? ?? '',
       purpose: json['purpose'] as String? ?? '',
@@ -104,6 +108,8 @@ class SubscriptionPaymentResponse {
   final String? planName;
   final String billingInterval;
   final double amount;
+  final double? transactionFee;
+  final double? totalAmount;
   final String currency;
   final String status;
 

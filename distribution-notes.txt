@@ -1,6 +1,4 @@
-ileny mobile 1.0.0 (build 5)
+ileny mobile 1.0.0 (build 6)
 
-Admins can now approve only part of a leave request. The approval screen lets
-the reviewer choose the number of working days to grant and add an optional
-comment. Leave history shows the requested and approved day counts and the
-shortened approved-through date.
+Subscription payment history now shows the plan price, transaction fee and
+total charged. Tenants cover transaction costs separately from the plan price.

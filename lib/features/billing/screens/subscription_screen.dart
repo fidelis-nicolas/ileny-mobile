@@ -104,6 +104,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   rows: [
                     _Row('Plan', subscription.planName ?? '—'),
                     _Row('Billing', _billingLine(subscription)),
+                    const _Row('Transaction fees', 'Paid by your organisation in addition to plan prices'),
                     _Row(
                       'Employees',
                       subscription.maxEmployees == null
@@ -183,7 +184,7 @@ String _cardLine(SubscriptionResponse s) {
 
 String _money(double? amount) {
   if (amount == null) return '—';
-  return NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 0).format(amount);
+  return NumberFormat.currency(locale: 'en_NG', symbol: '₦', decimalDigits: 2).format(amount);
 }
 
 String _formatDate(String iso) {
@@ -322,6 +323,11 @@ class _PaymentTile extends StatelessWidget {
                   '${payment.planName ?? 'Subscription'} · ${_purposeLabel(payment.purpose)}',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
+                if (payment.transactionFee != null)
+                  Text(
+                    'Plan ${_money(payment.amount)} + fee ${_money(payment.transactionFee)}',
+                    style: TextStyle(color: context.palette.textMuted, fontSize: 12),
+                  ),
                 Text(
                   '${_formatDate(payment.paidAt)} · '
                   '${_formatDate(payment.periodStart)} – ${_formatDate(payment.periodEnd)}',
@@ -332,7 +338,7 @@ class _PaymentTile extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            _money(payment.amount),
+            _money(payment.totalAmount ?? payment.amount),
             style: TextStyle(
               fontWeight: FontWeight.w700,
               color: failed ? context.palette.textMuted : context.palette.primary,

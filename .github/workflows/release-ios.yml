@@ -1,0 +1,60 @@
+name: Build signed iOS release
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: Unique increasing App Store build number
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: mobile-ios-release
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/ci.yml
+  ios:
+    needs: verify
+    runs-on: macos-15
+    timeout-minutes: 45
+    environment: production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: '3.44.4'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Install signing identity into an ephemeral keychain
+        env:
+          IOS_CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          IOS_CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          IOS_PROFILE_BASE64: ${{ secrets.IOS_PROFILE_BASE64 }}
+          IOS_EXPORT_OPTIONS_BASE64: ${{ secrets.IOS_EXPORT_OPTIONS_BASE64 }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: bash .github/scripts/ios-signing.sh
+      - name: Build signed IPA
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: flutter build ipa --release --build-number="$BUILD_NUMBER" --dart-define="API_BASE_URL=$API_BASE_URL" --export-options-plist="$RUNNER_TEMP/ExportOptions.plist"
+      - name: Remove signing material
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/ileny-signing.keychain-db" || true
+          rm -f "$RUNNER_TEMP/certificate.p12" "$RUNNER_TEMP/profile.mobileprovision" "$RUNNER_TEMP/ExportOptions.plist"
+          if test -n "${IOS_PROFILE_UUID:-}"; then
+            rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/$IOS_PROFILE_UUID.mobileprovision"
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ios-production-${{ inputs.build_number }}
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: error
+          retention-days: 30

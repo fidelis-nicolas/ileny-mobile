@@ -1,0 +1,85 @@
+name: Build signed Android release
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Release configuration
+        type: choice
+        options: [staging, production]
+        default: staging
+      build_number:
+        description: Unique increasing Play versionCode (greater than all previous uploads)
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: mobile-release-${{ inputs.environment }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/ci.yml
+  android:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: '3.44.4'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Require release signing and API configuration
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEY_PROPERTIES: ${{ secrets.ANDROID_KEY_PROPERTIES }}
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+        run: |
+          set -euo pipefail
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          test -n "$ANDROID_KEY_PROPERTIES"
+          [[ "$API_BASE_URL" =~ ^https://[a-zA-Z0-9.-]+(:[0-9]+)?/api/v1$ ]]
+          [[ "$BUILD_NUMBER" =~ ^[1-9][0-9]*$ && "$BUILD_NUMBER" -lt 2100000000 ]]
+          umask 077
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          printf '%s\n' "$ANDROID_KEY_PROPERTIES" > android/key.properties
+          # Force the file to match the restored keystore; no debug-key fallback.
+          sed -i '/^[[:space:]]*storeFile[[:space:]]*=/d' android/key.properties
+          printf '\nstoreFile=upload-keystore.jks\n' >> android/key.properties
+          for property in storePassword keyAlias keyPassword; do
+            grep -Eq "^$property=.+" android/key.properties
+          done
+      - name: Build signed AAB and APK
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
+          TARGET_ENV: ${{ inputs.environment }}
+        run: |
+          flutter build appbundle --release --build-number="$BUILD_NUMBER" --dart-define="API_BASE_URL=$API_BASE_URL"
+          flutter build apk --release --build-number="$BUILD_NUMBER" --dart-define="API_BASE_URL=$API_BASE_URL"
+          sha256sum build/app/outputs/bundle/release/app-release.aab build/app/outputs/flutter-apk/app-release.apk > checksums.txt
+          printf 'commit=%s\nenvironment=%s\nbuild_number=%s\n' "$GITHUB_SHA" "$TARGET_ENV" "$BUILD_NUMBER" > release.txt
+      - name: Remove signing material
+        if: always()
+        run: rm -f android/app/upload-keystore.jks android/key.properties
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: android-${{ inputs.environment }}-${{ inputs.build_number }}
+          path: |
+            build/app/outputs/bundle/release/app-release.aab
+            build/app/outputs/flutter-apk/app-release.apk
+            checksums.txt
+            release.txt
+          if-no-files-found: error
+          retention-days: 30

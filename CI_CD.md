@@ -41,6 +41,8 @@ toolchain. It enforces the committed lockfile, runs analysis and widget tests, b
 Android debug APK, and builds iOS without code signing on a macOS runner. Test builds use
 an explicit non-production API URL. Coverage is uploaded as a workflow artifact. Existing
 informational style lints are non-blocking; analyzer errors and warnings still fail CI.
+The minimum iOS version is 15.0, matching the existing Firebase Swift packages. The
+previous 13.0 project target prevented iOS builds; devices running iOS 13/14 are not supported.
 
 Signed releases are manually triggered from `main` after the complete CI workflow succeeds.
 Android produces an APK and Play AAB with checksums and commit metadata. iOS produces a

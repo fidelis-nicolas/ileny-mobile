@@ -16,8 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+6
-
+version: 1.0.0+7
 environment:
   sdk: ^3.12.2
 
@@ -38,7 +37,7 @@ dependencies:
   # SVG rendering for the ileny logo mark.
   flutter_svg: ^2.2.1
 
-  # Fraunces (display) and Inter (UI) — the same pairing the web client sets in
+  # Fraunces (display) and Inter (UI) â€” the same pairing the web client sets in
   # src/styles/globals.css, so the two clients read as one product. Fetched on
   # first use and cached to disk; every text style falls back to the platform
   # font if that fetch fails, so a cold offline start degrades rather than
@@ -56,20 +55,20 @@ dependencies:
   cached_network_image: ^3.4.1
 
   # Opens a downloaded payslip PDF with the device's own PDF app instead of
-  # bundling an in-app renderer — smallest-footprint option per plan.txt's
+  # bundling an in-app renderer â€” smallest-footprint option per plan.txt's
   # "evaluate then, not before" note on PDF viewing.
   open_file: ^3.5.10
 
   # Camera capture for discipline-case documents (Phase 4 Tier B, HR
   # Manager/Org Admin only). imageQuality/maxWidth below do the client-side
-  # compression plan.txt asks for — no separate compression package needed.
+  # compression plan.txt asks for â€” no separate compression package needed.
   image_picker: ^1.2.1
 
-  # GPS position for geofenced clock-in/out (Phase 5) — backend already
+  # GPS position for geofenced clock-in/out (Phase 5) â€” backend already
   # validates lat/lng against the employee's branch radius.
   geolocator: ^14.0.3
 
-  # Push notifications (Phase 5) — initialized with placeholder credentials
+  # Push notifications (Phase 5) â€” initialized with placeholder credentials
   # in lib/firebase_options.dart until a real Firebase project exists; see
   # that file's doc comment.
   firebase_core: ^4.12.0
@@ -77,7 +76,7 @@ dependencies:
   mobile_scanner: ^7.4.0
 
   # Opens the terms and privacy policy in the device browser. The documents are
-  # served by the marketing front end, not bundled here — see LegalController in
+  # served by the marketing front end, not bundled here â€” see LegalController in
   # the API: legal text belongs where it can change without a deploy, and a copy
   # inside the APK could only be corrected by shipping a Play release.
   url_launcher: ^6.3.2

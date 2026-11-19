@@ -13,6 +13,7 @@ import '../data/attendance_repository.dart';
 import 'qr_scan_screen.dart';
 import 'request_correction_screen.dart';
 import 'team_attendance_screen.dart';
+import 'kiosk_screen.dart';
 
 /// Clock in/out + this month's summary + paginated history for the signed-in
 /// employee. `EMPLOYEE`-role accounts currently only hold `attendance:create`
@@ -241,6 +242,15 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             tooltip: 'Request a correction',
             onPressed: () => _requestCorrection(),
           ),
+          if (context.watch<AuthState>().currentUser?.roleNames.any(
+                (role) => role == 'SUPER_ADMIN' || role == 'HR_MANAGER') ?? false)
+            IconButton(
+              icon: const Icon(Icons.qr_code_scanner),
+              tooltip: 'Attendance kiosk',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const KioskScreen()),
+              ),
+            ),
           if (isManager)
             IconButton(
               icon: const Icon(Icons.groups_outlined),

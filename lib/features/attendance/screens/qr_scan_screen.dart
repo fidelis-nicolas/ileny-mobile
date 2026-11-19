@@ -19,9 +19,10 @@ import '../../../core/theme/app_colors.dart';
 /// that doesn't match it, so there is nothing to gain by trusting the scanned
 /// `branchId`.
 class QrScanScreen extends StatefulWidget {
-  const QrScanScreen({super.key, this.title = 'Scan branch QR code'});
+  const QrScanScreen({super.key, this.title = 'Scan branch QR code', this.employeeCard = false});
 
   final String title;
+  final bool employeeCard;
 
   @override
   State<QrScanScreen> createState() => _QrScanScreenState();
@@ -48,7 +49,10 @@ class _QrScanScreenState extends State<QrScanScreen> {
     if (_handled) return;
 
     for (final barcode in capture.barcodes) {
-      final token = _extractQrToken(barcode.rawValue);
+      final raw = barcode.rawValue?.trim();
+      final token = widget.employeeCard
+          ? (raw != null && RegExp(r'^[A-Za-z0-9_-]{43}$').hasMatch(raw) ? raw : null)
+          : _extractQrToken(raw);
       if (token != null) {
         _handled = true;
         Navigator.of(context).pop(token);
@@ -59,7 +63,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
     // Something scanned, but it isn't one of ours — say so instead of leaving
     // the user staring at a camera that appears to do nothing.
     if (capture.barcodes.isNotEmpty && mounted) {
-      setState(() => _rejected = "That isn't an ileny branch QR code.");
+      setState(() => _rejected = widget.employeeCard ? "That is not an employee card." : "That is not a branch QR code.");
     }
   }
 
@@ -96,7 +100,7 @@ class _QrScanScreenState extends State<QrScanScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  _rejected ?? 'Point your camera at the QR code posted at your branch.',
+                  _rejected ?? (widget.employeeCard ? 'Point the camera at the employee card.' : 'Point your camera at the QR code posted at your branch.'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: _rejected == null ? Colors.white : context.palette.danger,

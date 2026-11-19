@@ -1,4 +1,3 @@
-ileny mobile 1.0.0 (build 6)
+ileny mobile 1.0.0 (build 7)
 
-Subscription payment history now shows the plan price, transaction fee and
-total charged. Tenants cover transaction costs separately from the plan price.
+Super admins and HR managers can scan employee QR cards to record attendance at a shared device.

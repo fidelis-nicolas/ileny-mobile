@@ -165,6 +165,16 @@ class AttendanceRepository {
     }
   }
 
+  Future<AttendanceResponse> kioskPunch(String token, String action) async {
+    try {
+      final response = await _dioClient.dio.post<Map<String, dynamic>>(
+        '/attendance/kiosk/punch', data: {'token': token, 'action': action});
+      return AttendanceResponse.fromJson(response.data!);
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
   String _isoDate(DateTime date) {
     final y = date.year.toString().padLeft(4, '0');
     final m = date.month.toString().padLeft(2, '0');

@@ -156,6 +156,7 @@ class Goal {
     this.dueDate,
     required this.status,
     required this.progressPercent,
+    this.allowEmployeeGoalProgressUpdates = true,
   });
 
   factory Goal.fromJson(Map<String, dynamic> json) {
@@ -172,6 +173,9 @@ class Goal {
       dueDate: json['dueDate'] as String?,
       status: json['status'] as String,
       progressPercent: (json['progressPercent'] as num?)?.toInt() ?? 0,
+      // Older API versions allowed employees to report progress on every goal.
+      allowEmployeeGoalProgressUpdates:
+          json['allowEmployeeGoalProgressUpdates'] as bool? ?? true,
     );
   }
 
@@ -187,6 +191,7 @@ class Goal {
   final String? dueDate;
   final String status;
   final int progressPercent;
+  final bool allowEmployeeGoalProgressUpdates;
 
   bool get isActive => status == 'ACTIVE';
 }

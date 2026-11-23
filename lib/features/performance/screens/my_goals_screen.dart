@@ -4,16 +4,13 @@ import 'package:provider/provider.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/paginated_list_view.dart';
+import '../../auth/state/auth_state.dart';
 import '../data/performance_models.dart';
 import '../data/performance_repository.dart';
 import 'performance_labels.dart';
 
-/// The employee's own goals, and the way in to reporting progress on one.
-///
-/// Checking in needs no permission — progress is reported by whoever is doing
-/// the work, and a tracker only a manager can update is one that stops being
-/// updated. Closing a goal out is deliberately absent: whether a goal was
-/// achieved or missed is a judgement for whoever set it.
+/// The employee's goals and check-ins. Each goal controls whether the employee
+/// can update progress when checking in.
 class MyGoalsScreen extends StatefulWidget {
   const MyGoalsScreen({super.key});
 
@@ -141,10 +138,15 @@ class _GoalTile extends StatelessWidget {
   }
 
   Future<void> _openCheckIn(BuildContext context) async {
+    final canUpdateProgress = goal.allowEmployeeGoalProgressUpdates ||
+        context.read<AuthState>().permissions.contains('performance:manage');
     final recorded = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _CheckInSheet(goal: goal),
+      builder: (_) => _CheckInSheet(
+        goal: goal,
+        canUpdateProgress: canUpdateProgress,
+      ),
     );
     if (recorded == true) onCheckedIn();
   }
@@ -156,9 +158,10 @@ class _GoalTile extends StatelessWidget {
 /// "still blocked on procurement" only means something next to what came
 /// before.
 class _CheckInSheet extends StatefulWidget {
-  const _CheckInSheet({required this.goal});
+  const _CheckInSheet({required this.goal, required this.canUpdateProgress});
 
   final Goal goal;
+  final bool canUpdateProgress;
 
   @override
   State<_CheckInSheet> createState() => _CheckInSheetState();
@@ -201,7 +204,7 @@ class _CheckInSheetState extends State<_CheckInSheet> {
       await context.read<PerformanceRepository>().addGoalUpdate(
             goalId: widget.goal.id,
             note: _note.text,
-            progressPercent: _progress.round(),
+            progressPercent: widget.canUpdateProgress ? _progress.round() : null,
           );
       if (!mounted) return;
       Navigator.of(context).pop(true);
@@ -214,6 +217,8 @@ class _CheckInSheetState extends State<_CheckInSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final canSubmit = !_saving &&
+        (widget.canUpdateProgress || _note.text.trim().isNotEmpty);
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -237,26 +242,30 @@ class _CheckInSheetState extends State<_CheckInSheet> {
             TextField(
               controller: _note,
               maxLines: 3,
+              onChanged: widget.canUpdateProgress ? null : (_) => setState(() {}),
               decoration: const InputDecoration(
                 labelText: 'Where things stand',
                 hintText: 'What has moved, and what is in the way.',
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Progress: ${_progress.round()}%',
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            Slider(
-              value: _progress,
-              max: 100,
-              divisions: 20,
-              label: '${_progress.round()}%',
-              onChanged: (value) => setState(() => _progress = value),
-            ),
+            if (widget.canUpdateProgress) ...[
+              Text(
+                'Progress: ${_progress.round()}%',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              Slider(
+                value: _progress,
+                max: 100,
+                divisions: 20,
+                label: '${_progress.round()}%',
+                onChanged: (value) => setState(() => _progress = value),
+              ),
+            ] else
+              const Text('Only goal managers can update progress on this goal.'),
             const SizedBox(height: 8),
             FilledButton(
-              onPressed: _saving ? null : _submit,
+              onPressed: canSubmit ? _submit : null,
               child: Text(_saving ? 'Recording…' : 'Record check-in'),
             ),
             const SizedBox(height: 20),

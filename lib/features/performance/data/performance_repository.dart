@@ -165,11 +165,9 @@ class PerformanceRepository {
 
   /// Records a check-in.
   ///
-  /// Needs no permission when the goal is the caller's own — progress is
-  /// reported by whoever is doing the work. Omitting [progressPercent] records a
-  /// note without moving the goal. Closing a goal out is deliberately not
-  /// offered here: whether it was achieved or missed is a judgement for whoever
-  /// set it, and that decision belongs on the web client.
+  /// Employees can leave a note on their own goal. Setting [progressPercent]
+  /// requires the goal's employee progress setting or `performance:manage`.
+  /// Managers close out goals on the web client.
   Future<GoalUpdate> addGoalUpdate({
     required String goalId,
     String? note,
@@ -180,7 +178,7 @@ class PerformanceRepository {
         '/performance/goals/$goalId/updates',
         data: {
           if (note != null && note.isNotEmpty) 'note': note,
-          if (progressPercent != null) 'progressPercent': progressPercent,
+          'progressPercent': ?progressPercent,
         },
       );
       return GoalUpdate.fromJson(response.data!);

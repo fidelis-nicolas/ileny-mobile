@@ -1,3 +1,6 @@
-ileny mobile 1.0.0 (build 7)
+ileny mobile 1.0.0 (build 8)
 
-Super admins and HR managers can scan employee QR cards to record attendance at a shared device.
+- Managers can approve part of a leave request.
+- Super admins and HR managers can scan employee QR cards at a shared attendance kiosk.
+- Subscription history shows plan charges and transaction fees.
+- Employees can leave a check-in note when progress updates are disabled for a goal.
